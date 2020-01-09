@@ -1,6 +1,6 @@
 {
   "files": {
-    "main.css": "classicaljo.github.io/blinkjs/static/css/main.f3601fba.chunk.css",
+    "main.css": "classicaljo.github.io/blinkjs/static/css/main.c363f583.chunk.css",
     "main.js": "classicaljo.github.io/blinkjs/static/js/main.b1403b49.chunk.js",
     "main.js.map": "classicaljo.github.io/blinkjs/static/js/main.b1403b49.chunk.js.map",
     "runtime-main.js": "classicaljo.github.io/blinkjs/static/js/runtime-main.f21d0a1b.js",
@@ -8,15 +8,15 @@
     "static/js/2.c989a929.chunk.js": "classicaljo.github.io/blinkjs/static/js/2.c989a929.chunk.js",
     "static/js/2.c989a929.chunk.js.map": "classicaljo.github.io/blinkjs/static/js/2.c989a929.chunk.js.map",
     "index.html": "classicaljo.github.io/blinkjs/index.html",
-    "precache-manifest.b86710af8b9986388359e4d77ba6dbf5.js": "classicaljo.github.io/blinkjs/precache-manifest.b86710af8b9986388359e4d77ba6dbf5.js",
+    "precache-manifest.a382a069fdf2c7017fff4578958cb4d8.js": "classicaljo.github.io/blinkjs/precache-manifest.a382a069fdf2c7017fff4578958cb4d8.js",
     "service-worker.js": "classicaljo.github.io/blinkjs/service-worker.js",
-    "static/css/main.f3601fba.chunk.css.map": "classicaljo.github.io/blinkjs/static/css/main.f3601fba.chunk.css.map",
+    "static/css/main.c363f583.chunk.css.map": "classicaljo.github.io/blinkjs/static/css/main.c363f583.chunk.css.map",
     "static/js/2.c989a929.chunk.js.LICENSE": "classicaljo.github.io/blinkjs/static/js/2.c989a929.chunk.js.LICENSE"
   },
   "entrypoints": [
     "static/js/runtime-main.f21d0a1b.js",
     "static/js/2.c989a929.chunk.js",
-    "static/css/main.f3601fba.chunk.css",
+    "static/css/main.c363f583.chunk.css",
     "static/js/main.b1403b49.chunk.js"
   ]
 }
