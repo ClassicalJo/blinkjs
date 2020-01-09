@@ -1,0 +1,99 @@
+@import "/node_modules/normalize.css/normalize.css";
+html, body {
+  margin: 0;
+  padding: 0;
+  display: inline;
+  font-size: 24px;
+}
+
+.svg-container svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-height: 100vh;
+}
+.svg-container svg .disappear {
+  animation: disappear 1.5s;
+  opacity: 0;
+}
+.svg-container svg .appear {
+  animation: disappear 1.5s reverse;
+  opacity: 1;
+}
+
+.playerGlow {
+  animation: glow 1s ease-in-out infinite alternate;
+  fill: pink;
+}
+
+#enemy {
+  animation: glow 1.1s ease-in-out infinite alternate;
+  fill: pink;
+}
+
+.enemy-wing {
+  animation: wing-glow 1s ease-in infinite alternate;
+}
+
+.barrier {
+  animation: barrier-glow 0.025s linear infinite alternate;
+}
+
+.damaged {
+  animation: barrier-damaged 0.025s linear infinite alternate;
+}
+
+.danger {
+  animation: barrier-danger 0.025s linear infinite alternate;
+}
+
+@keyframes disappear {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes glow {
+  from {
+    fill: #ff4da6;
+  }
+  to {
+    fill: pink, #ff4da6, #ff4da6, #ff4da6, #ff4da6, #ff4da6, #ff4da6;
+  }
+}
+@keyframes wing-glow {
+  from {
+    fill: rgba(255, 255, 255, 0.5);
+  }
+  to {
+    fill: rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.9);
+  }
+}
+@keyframes barrier-glow {
+  from {
+    fill: green;
+  }
+  to {
+    fill: green, rgba(57, 255, 20, 0.4), rgba(57, 255, 20, 0.5), rgba(57, 255, 20, 0.6), rgba(57, 255, 20, 0.9), #39ff14;
+  }
+}
+@keyframes barrier-damaged {
+  from {
+    fill: yellow;
+  }
+  to {
+    fill: yellow, rgba(57, 255, 20, 0.4), rgba(57, 255, 20, 0.5), rgba(57, 255, 20, 0.6), rgba(57, 255, 20, 0.9), #39ff14;
+  }
+}
+@keyframes barrier-danger {
+  from {
+    fill: red;
+  }
+  to {
+    fill: red, rgba(57, 255, 20, 0.4), rgba(57, 255, 20, 0.5), rgba(57, 255, 20, 0.6), rgba(57, 255, 20, 0.9), #39ff14;
+  }
+}
+
+/*# sourceMappingURL=app.css.map */
