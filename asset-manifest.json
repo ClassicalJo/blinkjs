@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "classicaljo.github.io/blinkjs/static/css/main.2c983fc7.chunk.css",
-    "main.js": "classicaljo.github.io/blinkjs/static/js/main.f4306d4e.chunk.js",
-    "main.js.map": "classicaljo.github.io/blinkjs/static/js/main.f4306d4e.chunk.js.map",
+    "main.js": "classicaljo.github.io/blinkjs/static/js/main.a2dc944e.chunk.js",
+    "main.js.map": "classicaljo.github.io/blinkjs/static/js/main.a2dc944e.chunk.js.map",
     "runtime-main.js": "classicaljo.github.io/blinkjs/static/js/runtime-main.f21d0a1b.js",
     "runtime-main.js.map": "classicaljo.github.io/blinkjs/static/js/runtime-main.f21d0a1b.js.map",
     "static/js/2.c989a929.chunk.js": "classicaljo.github.io/blinkjs/static/js/2.c989a929.chunk.js",
     "static/js/2.c989a929.chunk.js.map": "classicaljo.github.io/blinkjs/static/js/2.c989a929.chunk.js.map",
     "index.html": "classicaljo.github.io/blinkjs/index.html",
-    "precache-manifest.f5ba755b4deeb86c9bafe64bdbf519b4.js": "classicaljo.github.io/blinkjs/precache-manifest.f5ba755b4deeb86c9bafe64bdbf519b4.js",
+    "precache-manifest.fdd262dad184b6970ce762d1970a7a13.js": "classicaljo.github.io/blinkjs/precache-manifest.fdd262dad184b6970ce762d1970a7a13.js",
     "service-worker.js": "classicaljo.github.io/blinkjs/service-worker.js",
     "static/css/main.2c983fc7.chunk.css.map": "classicaljo.github.io/blinkjs/static/css/main.2c983fc7.chunk.css.map",
     "static/js/2.c989a929.chunk.js.LICENSE": "classicaljo.github.io/blinkjs/static/js/2.c989a929.chunk.js.LICENSE"
@@ -17,6 +17,6 @@
     "static/js/runtime-main.f21d0a1b.js",
     "static/js/2.c989a929.chunk.js",
     "static/css/main.2c983fc7.chunk.css",
-    "static/js/main.f4306d4e.chunk.js"
+    "static/js/main.a2dc944e.chunk.js"
   ]
 }
