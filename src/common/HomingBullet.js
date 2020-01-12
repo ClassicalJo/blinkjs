@@ -1,5 +1,5 @@
 import { Bodies, World, Constraint, Body } from 'matter-js'
-
+import Target from "./TargetingSystem"
 class HomingBullet {
     constructor(x, y, r, target, world, container) {
         let options = {
@@ -12,8 +12,9 @@ class HomingBullet {
         this.body.label = "homingBullet"
         this.radius = r
 
+        let { x: targetX, y: targetY } = Target.homing(x, y, 500, player)
 
-        let hook = Bodies.circle(target.x, target.y, 1, { isStatic: true, isSensor: true, label: "wall" })
+        let hook = Bodies.circle(targetX, targetY, 1, { isStatic: true, isSensor: true, label: "wall" })
         let constraint = Constraint.create({ bodyA: this.body, bodyB: hook, stiffness: 0.001 })
         constraint.length = constraint.length / 2
 

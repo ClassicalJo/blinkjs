@@ -10,8 +10,7 @@ let EnemySVG = (cx, cy, r) => {
             <path key="2" d={path} fill="white" className="enemy-wing" transform="scale(-1, 1)" />
             <circle
                 key="3"
-                id="enemy"
-                className="glow"
+                className="enemy"
                 cx={cx}
                 cy={cy}
                 r={r}

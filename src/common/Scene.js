@@ -1,17 +1,57 @@
 import React from 'react'
-import { Body, Runner } from 'matter-js'
+import { Body, Runner, Engine } from 'matter-js'
+import Rectangle from '../common/Rectangle'
+import PlayerBullet from "../common/PlayerBullet"
+import Frame from '../common/Frame'
 import Death from '../scenes/Death'
-import PlayerBullet from './PlayerBullet';
 import PlayerSVG from '../assets/svg/PlayerSVG';
 import EnemySVG from '../assets/svg/EnemySVG';
 import Touchscreen from "../assets/svg/Touchscreen"
 import collisionEvents from '../common/CollisionEvents'
+import BulletsSVG from '../assets/svg/BulletsSVG'
 
 class Scene extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            player: null,
+            playerBullets: [],
+            walls: [],
+            bullets: [],
+            bouncers: [],
+            timer: 0,
+            barriers: [],
+            enemies: [],
+            theEnd: false
+        }
+        this.timeouts = []
+        this.intervals = []
+        this.pause = false
+
+        this.engine = Engine.create()
+        this.world = this.engine.world
+        this.runner = Runner.create()
+        this.world.gravity.y = 0
+
+        this.enemies = []
+        this.barriers = []
+        this.bullets = []
+        this.bouncers = []
+        this.playerBullets = []
+
+        this.state.walls = new Frame(this.world).walls
+        this.timer = 0
+
+        this.player = new Rectangle(0, 300, 20, 20, {}, this.world)
+        this.player.body.label = "player"
+        this.state.player = this.player
+
+        this.theEnd = false
+    }
+
     componentDidMount = () => {
         this.intervals = []
         collisionEvents(this.player, this.engine, this.playerBullets)
-        this.cycle = setInterval(() => requestAnimationFrame(() => this.updateCycle()))
         this.timerInterval = setInterval(() => {
             this.timer = Number(this.timer) + 0.1
             this.timer = Math.round(this.timer * 100) / 100
@@ -19,30 +59,50 @@ class Scene extends React.Component {
         if (this.props.playMode === "keyboard") window.addEventListener("keydown", this.handleKeyDown, true)
         this.intervals.push(this.timerInterval, this.cycle)
         Runner.run(this.runner, this.engine)
+        this.cycle()
     }
 
     componentWillUnmount = () => {
         Runner.stop(this.runner)
+        cancelAnimationFrame(this.loop)
         this.intervals.forEach((key) => clearInterval(key))
         this.timeouts.forEach((key) => clearTimeout(key))
         window.removeEventListener("keydown", this.handleKeyDown, true)
     }
 
+    cycle = () => {
+        this.updateCycle();
+        this.loop = requestAnimationFrame(() => this.cycle())
+    }
+
+    togglePause = () => {
+        if (this.pause) {
+            this.cycle()
+            Runner.run(this.runner, this.engine)
+            this.pause = false
+        }
+        else {
+            cancelAnimationFrame(this.loop)
+            Runner.stop(this.runner)
+            this.pause = true
+        }
+    }
 
     updateCycle = () => {
         if (this.player.dead === true) {
+            cancelAnimationFrame(this.loop)
             Runner.stop(this.runner)
-            clearInterval(this.cycle)
+            this.timeouts.forEach((key) => clearTimeout(key))
         }
         this.setState((prevState) => {
             for (let i = 0; i < this.barriers.length; i++) {
                 if (this.barriers[i].body.hp < this.barriers[i].danger * 2) {
                     this.barriers[i].classNames = "barrier damaged"
-                } 
+                }
 
                 if (this.barriers[i].body.hp < this.barriers[i].danger) {
                     this.barriers[i].classNames = "barrier danger"
-                } 
+                }
 
                 if (this.barriers[i].body.hp <= 0) {
                     this.barriers[i].remove()
@@ -57,12 +117,13 @@ class Scene extends React.Component {
                     i--
                     this.props.victory()
                 }
-                
+
             }
 
             let player = Object.assign({}, prevState.player)
             let playerBullets = Object.assign({}, prevState.playerBullets)
             let bullets = Object.assign({}, prevState.bullets)
+            let bouncers = Object.assign({}, prevState.bouncers)
             let barriers = Object.assign({}, prevState.barriers)
             let enemies = Object.assign({}, prevState.enemies)
             let timer = this.timer
@@ -71,10 +132,11 @@ class Scene extends React.Component {
             player = this.player
             playerBullets = this.playerBullets
             bullets = this.bullets
+            bouncers = this.bouncers
             enemies = this.enemies
             barriers = this.barriers
 
-            return { player, playerBullets, bullets, enemies, barriers, timer, theEnd }
+            return { player, playerBullets, bullets, bouncers, enemies, barriers, timer, theEnd }
         })
     }
     handleTouch = (e) => {
@@ -95,7 +157,7 @@ class Scene extends React.Component {
             this.lastMovement = "left"
         }
     }
-    
+
     handleKeyDown = (e) => {
         if (e.key === "w") {
             Body.setVelocity(this.player.body, { x: 0, y: -10 });
@@ -165,7 +227,7 @@ class Scene extends React.Component {
             setTimeout(() => this.player.bulletOnCooldown = false, 100)
         }
     }
-    
+
     renderScene = () => {
         if (this.player.dead !== true) {
             return (
@@ -177,14 +239,16 @@ class Scene extends React.Component {
                         fill="white"
                     >{String(this.state.timer)}
                     </text>
-                    {this.state.bullets.map((key) =>
-                        <circle
-                            key={this.state.bullets.indexOf(key)}
-                            cx={key.body.position.x}
-                            cy={key.body.position.y}
-                            r={key.radius}
-                            fill="white">
-                        </circle>)}
+                    <filter id="blur">
+                        <feGaussianBlur stdDeviation="2" />
+                    </filter>
+                    {this.state.bullets.map((key) => {
+                        if (key.body.label === "bullet") return BulletsSVG.bullet(key)
+                        else if (key.body.label === 'bouncer') return BulletsSVG.bouncer(key)
+                        else if (key.body.label === 'bigBullet') return BulletsSVG.bigBullet(key)
+                        else if (key.body.label === 'surroundBullet') return BulletsSVG.bigBullet(key)
+                    })
+                    })}
                     {this.state.playerBullets.map((key) =>
                         <circle
                             key={this.state.playerBullets.indexOf(key)}
@@ -219,6 +283,7 @@ class Scene extends React.Component {
                         stroke="rgba(255,255,255,0.5"
                         fill="transparent"
                     />
+                    {this.state.theEnd === true && <rect x="-1000" y="-500" width="2000" height="1000" fill="white" pointerEvents="none" className="disappear"></rect>}
                     {this.props.playMode === "touchscreen" && <Touchscreen onClick={(e) => this.handleTouch(e)} shoot={this.shoot} blink={this.blink} />}
                 </React.Fragment>
             )
@@ -229,6 +294,7 @@ class Scene extends React.Component {
                     y={this.state.player.body.position.y}
                     width={this.state.player.width}
                     height={this.state.player.height}
+                    restart={this.props.restart}
 
                 />)
         }

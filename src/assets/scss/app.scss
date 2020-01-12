@@ -25,12 +25,13 @@ html, body {
     }
 }
 
+
 .playerGlow {
     animation: glow 1s ease-in-out infinite alternate;
     fill: pink;
   }
   
-#enemy {
+.enemy {
     animation: glow 1.1s ease-in-out infinite alternate;
     fill: pink;
 }
@@ -50,6 +51,11 @@ html, body {
 .danger {
     animation: barrier-danger .025s linear infinite alternate;
 }
+
+.bouncer {
+    animation: glow .025s linear infinite alternate;
+}
+
 @keyframes disappear {
     0% {
         opacity: 1;
@@ -65,7 +71,7 @@ html, body {
         fill: #ff4da6;
     }
     to {
-        fill:  pink, #ff4da6,  #ff4da6,  #ff4da6,  #ff4da6,  #ff4da6,  #ff4da6;
+        fill:  initial, #ff4da6,  #ff4da6,  #ff4da6,  #ff4da6,  #ff4da6,  #ff4da6;
     }
   }
 

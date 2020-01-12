@@ -1,14 +1,14 @@
 import { Bodies, World } from 'matter-js'
 
 class Enemy {
-    constructor(x, y, r, world) {
+    constructor(x, y, r, hp, world) {
         let options = {
-            isSensor: true,
             isStatic: true,
         }
         this.body = Bodies.circle(x, y, r, options)
-        this.body.hp = 10
+        this.body.hp = hp
         this.body.label = "enemy"
+        this.dead = false
         this.radius = r
         
         //oscilacion

@@ -26,7 +26,7 @@ html, body {
   fill: pink;
 }
 
-#enemy {
+.enemy {
   animation: glow 1.1s ease-in-out infinite alternate;
   fill: pink;
 }
@@ -47,6 +47,10 @@ html, body {
   animation: barrier-danger 0.025s linear infinite alternate;
 }
 
+.bouncer {
+  animation: glow 0.025s linear infinite alternate;
+}
+
 @keyframes disappear {
   0% {
     opacity: 1;
@@ -60,7 +64,7 @@ html, body {
     fill: #ff4da6;
   }
   to {
-    fill: pink, #ff4da6, #ff4da6, #ff4da6, #ff4da6, #ff4da6, #ff4da6;
+    fill: initial, #ff4da6, #ff4da6, #ff4da6, #ff4da6, #ff4da6, #ff4da6;
   }
 }
 @keyframes wing-glow {

@@ -9,6 +9,7 @@ class Death extends React.Component {
             showPlayer: true,
             particles: []
         }
+        this.pause = false
         this.engine = Engine.create()
         this.runner = Runner.create()
         this.world = this.engine.world
@@ -21,7 +22,7 @@ class Death extends React.Component {
         let step = 2 * Math.PI / 20
 
         for (let theta = 0; theta < 2 * Math.PI; theta += step) {
-            setTimeout(() => {
+            this.explosion = setTimeout(() => {
                 this.setState({ showPlayer: false })
                 let particle = new Circle(r * Math.cos(theta) + this.props.x, -r * Math.sin(theta) + this.props.y, 10, {}, this.world)
                 this.particles.push(particle)
@@ -30,7 +31,12 @@ class Death extends React.Component {
     }
 
     componentDidMount = () => {
-        this.cycle = setInterval(() => requestAnimationFrame(() => this.updateCycle()));
+        this.cycle()
+    }
+
+    cycle = () => {
+        this.updateCycle();
+        this.loop = requestAnimationFrame(() => this.cycle())
     }
 
     updateCycle = () => {
@@ -39,6 +45,11 @@ class Death extends React.Component {
             particles = this.particles
             return { particles }
         })
+    }
+
+    componentWillUnmount = () => {
+        cancelAnimationFrame(this.loop)
+        clearTimeout(this.explosion)
     }
 
     render() {
@@ -59,11 +70,30 @@ class Death extends React.Component {
                     r={key.radius}
                     fill="pink" />
                 )}
-                {this.state.showPlayer === false && <text
-                    className="appear"
-                    fill="white"
-                    textAnchor="middle"
-                >You tried</text>}
+                {this.state.showPlayer === false &&
+                    <g>
+                        <text
+                            className="appear"
+                            fill="white"
+                            textAnchor="middle">
+                            You tried
+                        </text>
+                        <rect
+                            className="appear"
+                            width="25%"
+                            height="50"
+                            x="-12.5%"
+                            y="75"
+                            fill="white"
+                            onClick={this.props.restart} />
+                        <text
+                            y="100"
+                            className="appear"
+                            textAnchor="middle"
+                            pointerEvents="none">
+                            Try again
+                        </text>
+                    </g>}
             </React.Fragment>)
     }
 }

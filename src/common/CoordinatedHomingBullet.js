@@ -1,24 +1,28 @@
 import { Bodies, World, Constraint, Body } from 'matter-js'
+import Target from './TargetingSystem'
 
 class HomingBullet {
-    constructor(x, y, r, target, world, container, timer) {
+    constructor(x, originX, y, originY, r, player, world, container, timer) {
         let options = {
             isSensor: true,
             isStatic: true,
         }
-        
+
         this.timeouts = []
         this.body = Bodies.circle(x, y, r, options)
-        this.body.label = "homingBullet"
+        this.body.label = "bullet"
         this.radius = r
 
+        let { x: targetX, y: targetY } = Target.coordinates(x, y, originX, originY, 500)
 
-        let hook = Bodies.circle(target.x, target.y, 1, { isStatic: true, isSensor: true, label: "wall" })
+        let hook = Bodies.circle(targetX, targetY, 1, { isStatic: true, isSensor: true, label: "wall" })
+
+
         let constraint = Constraint.create({ bodyA: this.body, bodyB: hook, stiffness: 0.001 })
         constraint.length = constraint.length / 2
 
         World.add(world, [this.body, hook, constraint])
-        
+
         let fire = setTimeout(() => {
             Body.setStatic(this.body, false)
         }, timer)
@@ -43,10 +47,10 @@ class HomingBullet {
         }, 16)
 
         this.remove = () => {
-            this.timeouts.forEach((key)=> clearTimeout(key))
+            this.timeouts.forEach((key) => clearTimeout(key))
             clearInterval(this.checkIfIsOffScreen)
             World.remove(world, this.body)
-            for(let i = 0; i < container.length; i++) {
+            for (let i = 0; i < container.length; i++) {
                 if (container[i].body.id === this.body.id) container.splice(i, 1)
             }
         }
