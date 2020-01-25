@@ -1,6 +1,6 @@
 {
   "name": "blinkjs",
-  "homepage": "classicaljo.github.io/blinkjs/",
+  "homepage": "http://classicaljo.github.io/blinkjs/",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -44,3 +44,4 @@
     "nipplejs": "^0.8.4"
   }
 }
+
