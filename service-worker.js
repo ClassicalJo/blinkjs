@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "classicaljo.github.io/blinkjs/precache-manifest.a93cfcc4f04fc437301b125a1eb653a8.js"
+  "classicaljo.github.io/blinkjs/precache-manifest.70953e6774f418293c88c632081d7970.js"
 );
 
 self.addEventListener('message', (event) => {

@@ -1,6 +1,6 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "db925d4c3cbf3e98abc075d7c5d3d048",
+    "revision": "7a6cbdf8f9111d02a454332e52c26757",
     "url": "classicaljo.github.io/blinkjs/index.html"
   },
   {
