@@ -1,6 +1,6 @@
 let Target = {
     coordinates: (x, y, targetX, targetY, targetRadius) => {
-        let theta = Math.atan2(- y + targetY, -x + targetX)
+        let theta = Math.atan2(targetY - y, targetX - x)
         theta = (theta > 0 ? theta : (2 * Math.PI + theta)) * 360 / (2 * Math.PI)
         theta = theta * Math.PI / 180
         let finalX = x + targetRadius * Math.cos(theta)
@@ -8,13 +8,11 @@ let Target = {
         return { x: finalX, y: finalY }
     },
 
-    homing: (x, y, targetRadius, player) => {
-        let theta = Math.atan2(-y + player.body.position.y - player.height / 2, -x + player.body.position.x - player.width / 2)
+    getTargetVelocity: (x, y, targetX, targetY, bulletSpeed) => {
+        let theta = Math.atan2(targetY - y, targetX - x)
         theta = (theta > 0 ? theta : (2 * Math.PI + theta)) * 360 / (2 * Math.PI)
         theta = theta * Math.PI / 180
-        let finalX = x + targetRadius * Math.cos(theta)
-        let finalY = y + targetRadius * Math.sin(theta)
-        return { x: finalX, y: finalY }
+        return { x: bulletSpeed * Math.cos(theta), y: bulletSpeed * Math.sin(theta) }
     }
 }
 export default Target

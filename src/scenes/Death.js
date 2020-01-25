@@ -1,6 +1,6 @@
 import React from 'react'
 import { Engine, Runner } from 'matter-js'
-import Circle from '../common/Circle'
+import { Circle } from '../common/Bodies'
 
 class Death extends React.Component {
     constructor(props) {

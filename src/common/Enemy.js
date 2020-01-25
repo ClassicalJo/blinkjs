@@ -11,8 +11,6 @@ class Enemy {
         this.dead = false
         this.radius = r
         
-        //oscilacion
-        
         World.add(world, this.body)
 
         this.remove = () => {

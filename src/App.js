@@ -8,11 +8,38 @@ import "./assets/css/app.css"
 class App extends React.Component {
   constructor(props) {
     super(props);
+    let svgHeight = window.innerHeight > window.innerWidth * 9 / 16 ? window.innerWidth * 9 / 16 : window.innerHeight
+    let svgWidth = window.innerHeight > window.innerWidth * 9 / 16 ? window.innerWidth : window.innerHeight * 16 / 9
     this.state = {
       currentScene: 'start',
       playMode: "keyboard",
+      svgHeight: svgHeight,
+      svgWidth: svgWidth,
+      innerWidth: window.innerWidth,
+      innerHeight: window.innerHeight,
+      offset: (window.innerWidth - svgWidth) / 2
     }
+  }
 
+  componentDidMount = () => {
+    window.addEventListener("resize", this.resize)
+  }
+
+  componentWillUnmount = () => {
+    window.removeEventListener("resize", this.resize)
+  }
+
+
+  resize = () => {
+    let svgHeight = window.innerHeight > window.innerWidth * 9 / 16 ? window.innerWidth * 9 / 16 : window.innerHeight
+    let svgWidth = window.innerHeight > window.innerWidth * 9 / 16 ? window.innerWidth : window.innerHeight * 16 / 9
+    this.setState({
+      svgHeight: svgHeight,
+      svgWidth: svgWidth,
+      innerWidth: window.innerWidth,
+      innerHeight: window.innerHeight,
+      offset: (window.innerWidth - svgWidth) / 2
+    })
   }
 
   keyboard = () => {
@@ -42,29 +69,26 @@ class App extends React.Component {
   render() {
     return (
       <div className="svg-container" >
-        <svg viewBox="-1000 -500 2000 1000" preserveAspectRatio="xMidYMid meet">
-
-          <rect
-            fill="black"
-            width="100%"
-            height="100%"
-            x="-1000"
-            y="-500"
-          />
-          {this.state.currentScene === "start" && <Start keyboard={this.keyboard} touchscreen={this.touchscreen} />}
-          {this.state.currentScene === "scene1" && <Scene1 playMode={this.state.playMode} victory={this.victory} restart={this.restart}/>}
-          {this.state.currentScene === "victory" && <Victory />}
-          <rect
-            fill="transparent"
-            stroke="blue"
-            width="2100"
-            height="1150"
-            x="-1050"
-            y="-550"
-            strokeWidth="100"
-            pointerEvents="none" />
-
-        </svg>
+        {this.state.currentScene === "start" &&
+          <Start
+            svgHeight={this.state.svgHeight}
+            svgWidth={this.state.svgWidth}
+            innerHeight={this.state.innerHeight}
+            innerWidth={this.state.innerWidth}
+            offset={this.state.offset}
+            keyboard={this.keyboard}
+            touchscreen={this.touchscreen} />}
+        {this.state.currentScene === "scene1" &&
+          <Scene1
+            svgHeight={this.state.svgHeight}
+            svgWidth={this.state.svgWidth}
+            innerHeight={this.state.innerHeight}
+            innerWidth={this.state.innerWidth}
+            offset={this.state.offset}
+            playMode={this.state.playMode}
+            victory={this.victory}
+            restart={this.restart} />}
+        {this.state.currentScene === "victory" && <Victory />}
       </div>
     )
   }

@@ -6,8 +6,12 @@ let collisionEvents = (player, engine, playerBullets) => {
         for (let i = 0; i < event.pairs.length; i++) {
             let pair = event.pairs[i]
 
-            if (pair.bodyA.label === "player" && pair.bodyB.label !== "wall") player.dead = true
-            else if (pair.bodyB.label === "player" && pair.bodyA.label !== "wall") player.dead = true
+            if (pair.bodyA.label === "player" && pair.bodyB.label !== "wall") {
+                if (pair.bodyB.label !== "playerBullet") player.dead = true
+            }
+            else if (pair.bodyB.label === "player" && pair.bodyA.label !== "wall") {
+                if (pair.bodyA.label !== "playerBullet") player.dead = true
+            }
 
             if (pair.bodyA.label === "playerBullet") {
                 if (pair.bodyB.label === "barrier") {

@@ -31,5 +31,4 @@ class PlayerBullet {
         }
     }
 }
-
 export default PlayerBullet

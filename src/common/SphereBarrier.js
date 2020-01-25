@@ -14,9 +14,6 @@ class SphereBarrier {
         this.remove = () => {
             World.remove(world, this.body)
         }
-    }
-
-    
-    
+    }  
 }
 export default SphereBarrier

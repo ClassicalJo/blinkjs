@@ -35,12 +35,12 @@ let BulletsSVG = {
         return (
             <g key={key.body.id}>
                 <circle
-                    className="bigBullet"
+                    className={key.className}
                     cx={key.body.position.x}
                     cy={key.body.position.y}
                     r={key.radius}
                     stroke="#C24CF6"
-                    fill="#FC6E22"
+                    fill="black"
                     strokeWidth="5" />
             </g>
         )

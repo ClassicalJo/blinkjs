@@ -21,6 +21,10 @@ html, body {
   opacity: 1;
 }
 
+#zone {
+  position: absolute;
+}
+
 .playerGlow {
   animation: glow 1s ease-in-out infinite alternate;
   fill: pink;
