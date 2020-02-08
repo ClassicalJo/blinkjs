@@ -1,23 +1,23 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "2408b48c112d7063e3c3b5ddfc85f222",
+    "revision": "1d35f667c823d3176d99e94ada55aa46",
     "url": "/blinkjs/index.html"
   },
   {
-    "revision": "5998ec3f51bf5e53972c",
-    "url": "/blinkjs/static/css/main.716a1546.chunk.css"
+    "revision": "d81a86bb900ac57bc3c3",
+    "url": "/blinkjs/static/css/main.9e411e5d.chunk.css"
   },
   {
-    "revision": "f46d41526df71bbfd314",
-    "url": "/blinkjs/static/js/2.3c9d5f8e.chunk.js"
+    "revision": "0b32e5e3ab7c4b963d13",
+    "url": "/blinkjs/static/js/2.14fb289e.chunk.js"
   },
   {
     "revision": "d705cb622423d72c5defbf368ca70dcc",
-    "url": "/blinkjs/static/js/2.3c9d5f8e.chunk.js.LICENSE"
+    "url": "/blinkjs/static/js/2.14fb289e.chunk.js.LICENSE"
   },
   {
-    "revision": "5998ec3f51bf5e53972c",
-    "url": "/blinkjs/static/js/main.a2587f11.chunk.js"
+    "revision": "d81a86bb900ac57bc3c3",
+    "url": "/blinkjs/static/js/main.1a032aac.chunk.js"
   },
   {
     "revision": "9a099eff10a13bdd5356",
