@@ -1,0 +1,66 @@
+
+  
+.sakura {
+    animation: glow 1.1s ease-in-out infinite alternate;
+    fill: pink;
+}
+
+.enemy-wing {
+    animation: wing-glow 1s ease-in infinite alternate;
+}
+
+.barrier {
+    animation: barrier-glow .025s linear infinite alternate;
+}
+
+.damaged {
+    animation: barrier-damaged .025s linear infinite alternate;
+}
+
+.danger {
+    animation: barrier-danger .025s linear infinite alternate;
+}
+
+.bouncer {
+    animation: glow .025s linear infinite alternate;
+}
+
+
+  @keyframes wing-glow {
+    from {
+        fill: rgba(255,255,255,0.5);
+        
+     }
+    to {
+        fill: rgba(255,255,255,0.5), rgba(255,255,255,0.9);
+    }
+}
+
+  @keyframes barrier-glow {
+      from {
+          fill: green;
+          
+       }
+      to {
+          fill: green, rgba(57,255,20,0.4), rgba(57,255,20,0.5), rgba(57,255,20,0.6), rgba(57,255,20,0.9), rgba(57,255,20,1)
+      }
+  }
+
+  @keyframes barrier-damaged {
+    from {
+        fill: yellow;
+        
+     }
+    to {
+        fill: yellow, rgba(57,255,20,0.4), rgba(57,255,20,0.5), rgba(57,255,20,0.6), rgba(57,255,20,0.9), rgba(57,255,20,1)
+    }
+}
+  @keyframes barrier-danger {
+    from {
+        fill: red;
+        
+     }
+    to {
+        fill: red, rgba(57,255,20,0.4), rgba(57,255,20,0.5), rgba(57,255,20,0.6), rgba(57,255,20,0.9), rgba(57,255,20,1)
+    }
+}

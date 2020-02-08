@@ -72,24 +72,20 @@ class Death extends React.Component {
                 )}
                 {this.state.showPlayer === false &&
                     <g>
-                        <text
+                        <circle
                             className="appear"
-                            fill="white"
-                            textAnchor="middle">
-                            You tried
-                        </text>
-                        <rect
-                            className="appear"
-                            width="25%"
-                            height="50"
-                            x="-12.5%"
-                            y="75"
-                            fill="white"
+                            r="250"
+                            x="0"
+                            y="0"
+                            fill="rgba(255,255,255,0.2)"
                             onClick={this.props.restart} />
                         <text
-                            y="100"
                             className="appear"
+                            fill="white"
                             textAnchor="middle"
+                            fontFamily="Arial Black"
+                            fontSize="40"
+                            alignmentBaseline="central"
                             pointerEvents="none">
                             Try again
                         </text>

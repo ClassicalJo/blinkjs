@@ -8,7 +8,7 @@ class SphereBarrier {
         this.body.hp = maxHp
         this.radius = r
         this.danger = Math.ceil(this.body.maxHp / 4)
-        this.classNames = "barrier"    
+        this.className = "barrier"    
         World.add(world, this.body)
 
         this.remove = () => {

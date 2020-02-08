@@ -1,0 +1,10 @@
+@use "../css/common.css";
+
+.blood.bloodied {
+    
+    fill: rgba(175,0,0)
+}
+
+.blood.danger {
+    filter: rgba(100,0,0)
+}

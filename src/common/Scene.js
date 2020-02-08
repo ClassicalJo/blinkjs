@@ -1,5 +1,5 @@
 import React from 'react'
-import { Body, Runner, Engine } from 'matter-js'
+import { Body, Runner, Engine, Events, Composite } from 'matter-js'
 import { Rectangle } from '../common/Bodies'
 import PlayerBullet from "../common/PlayerBullet"
 import Frame from '../common/Frame'
@@ -11,6 +11,8 @@ import BulletsSVG from '../assets/svg/BulletsSVG'
 import Background from '../assets/svg/Background'
 import Touchscreen from "../assets/svg/Touchscreen"
 import Viewbox from '../assets/svg/Viewbox'
+import { AimedBullet } from '../common/EnemyBullets'
+import Target from "../common/TargetingSystem"
 
 class Scene extends React.Component {
     constructor(props) {
@@ -24,15 +26,19 @@ class Scene extends React.Component {
             timer: 0,
             barriers: [],
             enemies: [],
-            theEnd: false
+            message: "",
         }
-
+        this.message = ""
         this.timeouts = []
         this.intervals = []
         this.pause = false
+        
+        this.schedule = []
+
 
         this.engine = Engine.create()
         this.world = this.engine.world
+        this.world.timer = 0
         this.runner = Runner.create()
         this.world.gravity.y = 0
 
@@ -43,33 +49,33 @@ class Scene extends React.Component {
 
         this.playerBullets = []
         this.playerMovementMap = []
-        this.playerTouch = "end"
 
         this.state.walls = new Frame(this.world).walls
-        this.timer = 0
+
 
         this.player = new Rectangle(0, 300, 20, 20, {}, this.world)
         this.player.body.label = "player"
         this.player.direction = { x: 0, y: 0 }
         this.player.speed = 7
+        this.player.movement = false
         this.player.blinkDistance = 100
 
         this.state.player = this.player
-        this.theEnd = false
+
+
+        Events.on(this.engine, 'beforeUpdate', event => {
+            this.world.timer = Number(this.world.timer) + 0.016666
+            this.world.timer = Math.round(this.world.timer * 100) / 100
+        })
     }
 
     componentDidMount = () => {
         collisionEvents(this.player, this.engine, this.playerBullets)
-        this.timerInterval = setInterval(() => {
-            this.timer = Number(this.timer) + 0.1
-            this.timer = Math.round(this.timer * 100) / 100
-        }, 100)
-
         if (this.props.playMode === "keyboard") {
-            window.addEventListener("keydown", this.handleKeyDown, false)
-            window.addEventListener("keyup", this.handleKeyUp, false)
+            window.addEventListener("keydown", this.handleKeyDown, true)
+            window.addEventListener("keyup", this.handleKeyUp, true)
         }
-        this.intervals.push(this.timerInterval, this.cycle)
+        this.intervals.push(this.cycle)
         Runner.run(this.runner, this.engine)
         this.cycle()
     }
@@ -80,8 +86,8 @@ class Scene extends React.Component {
         this.intervals.forEach((key) => clearInterval(key))
         this.timeouts.forEach((key) => clearTimeout(key))
         if (this.props.playMode === "keyboard") {
-            window.removeEventListener("keydown", this.handleKeyDown)
-            window.removeEventListener("keyup", this.handleKeyUp)
+            window.removeEventListener("keydown", this.handleKeyDown, true)
+            window.removeEventListener("keyup", this.handleKeyUp, true)
         }
 
     }
@@ -89,6 +95,15 @@ class Scene extends React.Component {
     cycle = () => {
         this.updateCycle();
         this.loop = requestAnimationFrame(() => this.cycle())
+    }
+
+    * scheduleStart() {
+        var index = 0
+        while (true) yield index++;
+    }
+
+    next = () => {
+        this.schedule[this.step.next().value]()
     }
 
     togglePause = () => {
@@ -107,12 +122,13 @@ class Scene extends React.Component {
     updateCycle = () => {
         if (this.player.dead === true) {
             window.removeEventListener("keydown", this.handleKeyDown, true)
+            window.removeEventListener("keyup", this.handleKeyUp, false)
             cancelAnimationFrame(this.loop)
             Runner.stop(this.runner)
             this.timeouts.forEach((key) => clearTimeout(key))
         }
 
-        if (this.props.playMode === "keyboard") {
+        if (this.props.playMode === "keyboard" && (this.player.movement)) {
             this.player.direction = { x: 0, y: 0 }
             this.playerMovementMap.forEach(key => {
                 if (key === "a") this.player.direction.x -= this.player.speed
@@ -131,11 +147,11 @@ class Scene extends React.Component {
         this.setState((prevState) => {
             for (let i = 0; i < this.barriers.length; i++) {
                 if (this.barriers[i].body.hp < this.barriers[i].danger * 2) {
-                    this.barriers[i].classNames = "barrier damaged"
+                    this.barriers[i].className = "barrier damaged"
                 }
 
                 if (this.barriers[i].body.hp < this.barriers[i].danger) {
-                    this.barriers[i].classNames = "barrier danger"
+                    this.barriers[i].className = "barrier danger"
                 }
 
                 if (this.barriers[i].body.hp <= 0) {
@@ -160,8 +176,9 @@ class Scene extends React.Component {
             let bouncers = Object.assign({}, prevState.bouncers)
             let barriers = Object.assign({}, prevState.barriers)
             let enemies = Object.assign({}, prevState.enemies)
-            let timer = this.timer
-            let theEnd = this.theEnd
+            let timer = Number(this.world.timer)
+            let message = String(prevState.message)
+
 
             player = this.player
             playerBullets = this.playerBullets
@@ -169,26 +186,41 @@ class Scene extends React.Component {
             bouncers = this.bouncers
             enemies = this.enemies
             barriers = this.barriers
+            message = this.message
 
-            return { player, playerBullets, bullets, bouncers, enemies, barriers, timer, theEnd }
+            return { player, playerBullets, bullets, bouncers, enemies, barriers, timer, message }
         })
     }
 
     handleTouch = (angle) => {
-        if (angle === -1) this.player.direction = { x: 0, y: 0 }
-        else if (angle > 22.50 && angle < 67.5) this.player.direction = { x: this.player.speed, y: -this.player.speed }
-        else if (angle > 67.5 && angle < 112.5) this.player.direction = { x: 0, y: -this.player.speed }
-        else if (angle > 112.5 && angle < 157.5) this.player.direction = { x: -this.player.speed, y: -this.player.speed }
-        else if (angle > 157.5 && angle < 202.5) this.player.direction = { x: -this.player.speed, y: 0 }
-        else if (angle > 202.5 && angle < 247.5) this.player.direction = { x: -this.player.speed, y: this.player.speed }
-        else if (angle > 247.5 && angle < 292.5) this.player.direction = { x: 0, y: this.player.speed }
-        else if (angle > 292.5 && angle < 337.5) this.player.direction = { x: this.player.speed, y: this.player.speed }
-        else this.player.direction = { x: this.player.speed, y: 0 }
+        if (this.player.movement) {
+            if (angle === -1) this.player.direction = { x: 0, y: 0 }
+            else if (angle > 22.50 && angle < 67.5) this.player.direction = { x: this.player.speed, y: -this.player.speed }
+            else if (angle > 67.5 && angle < 112.5) this.player.direction = { x: 0, y: -this.player.speed }
+            else if (angle > 112.5 && angle < 157.5) this.player.direction = { x: -this.player.speed, y: -this.player.speed }
+            else if (angle > 157.5 && angle < 202.5) this.player.direction = { x: -this.player.speed, y: 0 }
+            else if (angle > 202.5 && angle < 247.5) this.player.direction = { x: -this.player.speed, y: this.player.speed }
+            else if (angle > 247.5 && angle < 292.5) this.player.direction = { x: 0, y: this.player.speed }
+            else if (angle > 292.5 && angle < 337.5) this.player.direction = { x: this.player.speed, y: this.player.speed }
+            else this.player.direction = { x: this.player.speed, y: 0 }
+        }
     }
 
+    timeout = (callback, delay) => {
+        let timeStamp = Number(this.world.timer)
+
+        let intervalName = setInterval(() => {
+            if (Math.abs(timeStamp - this.world.timer) * 1000 >= delay) {
+                callback()
+                clearInterval(intervalName)
+            }
+        }, 10)
+        this.intervals.push(intervalName)
+    }
 
     handleKeyDown = (e) => {
-        if (this.playerMovementMap.indexOf(e.key) === -1) this.playerMovementMap.push(e.key)
+        if (e.key === "p") this.togglePause()
+        else if (this.playerMovementMap.indexOf(e.key) === -1) this.playerMovementMap.push(e.key)
     }
 
     handleKeyUp = (e) => {
@@ -196,7 +228,7 @@ class Scene extends React.Component {
     }
 
     blink = () => {
-        if (this.player.blinkOnCooldown !== true) {
+        if (this.player.blinkOnCooldown !== true && (this.player.movement)) {
             this.player.blinkOnCooldown = true
             let blinkTimeout = setTimeout(() => this.player.blinkOnCooldown = false, 125)
             this.timeouts.push(blinkTimeout)
@@ -221,9 +253,8 @@ class Scene extends React.Component {
         }
     }
 
-
     shoot = () => {
-        if (this.player.bulletOnCooldown !== true) {
+        if (this.player.bulletOnCooldown !== true && (this.player.movement)) {
             this.player.bulletOnCooldown = true
             let bullet = new PlayerBullet(this.player.body.position.x, this.player.body.position.y - 50, 5, this.world, this.playerBullets)
             this.playerBullets.push(bullet)
@@ -232,29 +263,83 @@ class Scene extends React.Component {
         }
     }
 
+    setMessage = (string, callback) => {
+        let array = String(string).split("")
+        let message = ""
+        for (let i = 0; i < array.length; i++) {
+            this.timeout(() => {
+                message = message + array[i]
+                this.message = message
+            }, 100 * i)
+        }
+        this.timeout(() => {
+            if(callback) callback()
+        }, 100 * array.length + 500)
+    }
+
+    moveBody = (body, targetX, targetY, speed, callback) => {
+        if (this.checkIfInArea(body.position.x, targetX, speed) && this.checkIfInArea(body.position.y, targetY, speed)) {
+            Body.setVelocity(body, { x: 0, y: 0 })
+            Body.setPosition(body, { x: targetX, y: targetY })
+            if (callback) callback()
+        }
+        else {
+            let target = Target.getTargetVelocity(body.position.x, body.position.y, targetX, targetY, speed)
+            Body.setVelocity(body, target)
+            this.timeout(() => this.moveBody(body, targetX, targetY, speed, callback), 5)
+        }
+    }
+
+    checkIfInArea = (currentPosition, targetPosition, errorRange) => {
+        return Math.abs(targetPosition - currentPosition) < errorRange
+    }
+
+    theStart = () => {
+        window.removeEventListener("keydown", this.theStart)
+        window.removeEventListener("touchstart", this.theStart)
+        this.player.movement = true
+        this.setMessage(" ", this.next)
+    }
+
+    theEnd = () => {
+        let final = new AimedBullet(this.enemy.body.position.x || 0, this.enemy.body.position.y || 0, 10, 5, 5, 0, 0, this.world, this.bullets)
+        final.body.label = "explosion"
+        final.coreColor = this.enemy.coreColor || "red"
+        let finalComposite = Composite.create()
+        Composite.add(finalComposite, final.body)
+
+        for (let i = 0; i < 150; i++) {
+            this.timeout(() => Composite.scale(finalComposite, 1.05, 1.05, { x: final.body.position.x, y: final.body.position.y }, false), 16 * i)
+        }
+
+    }
+
     renderScene = () => {
         if (this.player.dead !== true) {
             return (
                 <React.Fragment>
                     <Background />
-                    <text
+                    {/* <text
                         x="-950"
-                        y="-425"
+                        y="-512.5"
                         stroke="white"
                         fill="white"
-                    >{String(this.state.timer)}
+                    >{String(this.state.timer)} */}
+                    {/* </text> */}
+                    <text
+                        x="0"
+                        y="0"
+                        stroke="white"
+                        fill="white"
+                        fontSize="100"
+                        fontFamily="Arial Black"
+                        textAnchor="middle"
+                    >{String(this.state.message)}
                     </text>
                     <filter id="blur">
                         <feGaussianBlur stdDeviation="2" />
                     </filter>
-                    {this.state.bullets.map((key) => {
-                        if (key.body.label === "bullet") return BulletsSVG.bullet(key)
-                        else if (key.body.label === 'bouncer') return BulletsSVG.bouncer(key)
-                        else if (key.body.label === 'bigBullet') return BulletsSVG.bigBullet(key)
-                        else if (key.body.label === 'surroundBullet') return BulletsSVG.bigBullet(key)
-                        else return null
-                    })
-                    })}
+                    {this.state.bullets.map((key) => BulletsSVG[key.body.label](key))}
                     {this.state.playerBullets.map((key) =>
                         <circle
                             key={this.state.playerBullets.indexOf(key)}
@@ -263,13 +348,15 @@ class Scene extends React.Component {
                             r={key.radius}
                             fill="white">
                         </circle>)}
-                    {this.state.enemies.map((key => EnemySVG(
+                    {this.state.enemies.map((key => EnemySVG[key.name](
                         key.body.position.x,
                         key.body.position.y,
-                        key.radius))
+                        key.body.circleRadius,
+                        key.coreColor,
+                        key.className))
                     )}
                     {this.state.barriers.map((key) => <circle
-                        className={key.classNames}
+                        className={key.className}
                         key={this.state.barriers.indexOf(key)}
                         cx={key.body.position.x}
                         cy={key.body.position.y}
@@ -289,7 +376,6 @@ class Scene extends React.Component {
                         stroke="rgba(255,255,255,0.5"
                         fill="transparent"
                     />
-                    {this.state.theEnd === true && <rect x="-1000" y="-562.5" width="2000" height="1125" fill="white" pointerEvents="none" className="disappear"></rect>}
                 </React.Fragment>
             )
         } else {

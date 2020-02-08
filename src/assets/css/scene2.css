@@ -1,0 +1,23 @@
+.playerGlow {
+  animation: glow 1s ease-in-out infinite alternate;
+  fill: pink;
+}
+
+@keyframes glow {
+  from {
+    fill: #ff4da6;
+  }
+  to {
+    fill: initial, #ff4da6, #ff4da6, #ff4da6, #ff4da6, #ff4da6, #ff4da6;
+  }
+}
+/*# sourceMappingURL=common.css.map */
+.blood.bloodied {
+  fill: #af0000;
+}
+
+.blood.danger {
+  filter: #640000;
+}
+
+/*# sourceMappingURL=scene2.css.map */

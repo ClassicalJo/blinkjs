@@ -1,10 +1,8 @@
 import React from 'react'
 
 let Background = () => {
-    let stars = []
-    for(let i = 0; i < 5; i++) {
-        stars.push(i)
-    }
+    let stars = [1]
+    
 
     return (
         <g>
