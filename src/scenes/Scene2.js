@@ -1,8 +1,7 @@
 import Scene from '../common/Scene'
 import { Enemy, Satellite, } from '../common/Enemy'
-import { World, Composite, Bodies, Body, Constraint } from 'matter-js'
+import { World, Composite} from 'matter-js'
 import Target from "../common/TargetingSystem"
-import SphereBarrier from '../common/SphereBarrier'
 import '../assets/css/scene2.css'
 import { Laser, AimLaser, AimedBullet } from '../common/EnemyBullets'
 

@@ -17,7 +17,7 @@ class Death extends React.Component {
         Runner.start(this.runner, this.engine)
 
         this.particles = []
-
+        this.timeouts = []
         let r = 1
         let step = 2 * Math.PI / 20
 
@@ -27,11 +27,17 @@ class Death extends React.Component {
                 let particle = new Circle(r * Math.cos(theta) + this.props.x, -r * Math.sin(theta) + this.props.y, 10, {}, this.world)
                 this.particles.push(particle)
             }, 1250)
+            this.timeouts.push(this.explosion)
         }
     }
 
     componentDidMount = () => {
         this.cycle()
+        window.addEventListener("keydown", this.handleKeyDown)
+    }
+
+    handleKeyDown = e => {
+        if (e.key === "r" || e.key === "R") this.props.restart()
     }
 
     cycle = () => {
@@ -49,7 +55,9 @@ class Death extends React.Component {
 
     componentWillUnmount = () => {
         cancelAnimationFrame(this.loop)
-        clearTimeout(this.explosion)
+        Runner.stop(this.runner )
+        this.timeouts.forEach(key => clearTimeout(key))
+        window.removeEventListener("keydown", this.handleKeyDown)
     }
 
     render() {
@@ -78,7 +86,8 @@ class Death extends React.Component {
                             x="0"
                             y="0"
                             fill="rgba(255,255,255,0.2)"
-                            onClick={this.props.restart} />
+                            onClick={this.props.restart} 
+                            />
                         <text
                             className="appear"
                             fill="white"

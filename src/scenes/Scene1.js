@@ -1,7 +1,6 @@
 import { Enemy } from '../common/Enemy';
 import SphereBarrier from '../common/SphereBarrier'
 import Scene from '../common/Scene'
-import { Rectangle } from '../common/Bodies'
 import { Bullet, AimedBullet, BouncerBullet, HomingBullet } from "../common/EnemyBullets"
 import "../assets/css/scene1.css"
 

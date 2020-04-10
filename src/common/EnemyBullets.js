@@ -2,12 +2,12 @@ import { Body, Bodies, World } from "matter-js"
 import Target from './TargetingSystem'
 
 export class Projectile {
-    constructor(world){
+    constructor(world) {
         let intervals = []
         this.isOffScreen = (x, y) => { return (x > 1250 || x < -1250 || y > 812.5 || y < -812.5) }
         this.timeout = (callback, delay) => {
             let timeStamp = Number(world.timer)
-            
+
             let intervalName = setInterval(() => {
                 if (Math.abs(timeStamp - world.timer) * 1000 >= delay) {
                     callback()
@@ -17,7 +17,7 @@ export class Projectile {
             intervals.push(intervalName)
         }
     }
-    
+
 }
 export class Bullet extends Projectile {
     constructor(x, y, r, speed, delay, world, container) {
@@ -44,7 +44,7 @@ export class Bullet extends Projectile {
     }
 }
 
-export class BouncerBullet extends Projectile{
+export class BouncerBullet extends Projectile {
     constructor(x, y, targetX, targetY, r, speed, delay, world, container) {
         super(world);
         this.options = {
@@ -56,7 +56,7 @@ export class BouncerBullet extends Projectile{
 
         World.add(world, this.body)
         container.push(this)
-        
+
         this.timeout(() => Body.setVelocity(this.body, target), delay)
         this.timeout(() => this.remove(), 5000)
 
@@ -67,7 +67,7 @@ export class BouncerBullet extends Projectile{
     }
 }
 
-export class AimedBullet extends Projectile{
+export class AimedBullet extends Projectile {
     constructor(x, y, targetX, targetY, r, speed, delay, world, container) {
         super(world)
         this.body = Bodies.circle(x, y, r, { isSensor: true, label: "bullet" })
@@ -90,7 +90,7 @@ export class AimedBullet extends Projectile{
     }
 }
 
-export class HomingBullet extends Projectile{
+export class HomingBullet extends Projectile {
     constructor(x, y, playerPosition, r, bulletSpeed, delay, world, container) {
         super(world);
         let intervals = []
@@ -154,3 +154,12 @@ export class AimLaser {
         }
     }
 }
+
+export class nulBullet extends AimedBullet {
+    constructor(x, y, targetX, targetY, r, speed, delay, world, container) {
+        super(x, y, targetX, targetY, r, speed, delay, world, container)
+        this.body.label = "nul"
+    }
+}
+
+

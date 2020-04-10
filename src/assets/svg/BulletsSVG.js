@@ -99,6 +99,20 @@ let BulletsSVG = {
                 fill="rgba(255,0,0,0.4)"
                 transform={rotate} />
         )
+    },
+    nul: key => {
+        return (
+            <g key={key.body.id}>
+                <circle
+                    className="bullet"
+                    cx={key.body.position.x}
+                    cy={key.body.position.y}
+                    r={key.body.circleRadius}
+                    stroke="#9649CB"
+                    fill="#292E1E"
+                    strokeWidth="3" />
+            </g>
+        )
     }
 }
 

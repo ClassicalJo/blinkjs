@@ -131,13 +131,13 @@ class Scene extends React.Component {
         if (this.props.playMode === "keyboard" && (this.player.movement)) {
             this.player.direction = { x: 0, y: 0 }
             this.playerMovementMap.forEach(key => {
-                if (key === "a") this.player.direction.x -= this.player.speed
-                else if (key === "d") this.player.direction.x += this.player.speed
-                if (key === "w") this.player.direction.y -= this.player.speed
-                else if (key === "s") this.player.direction.y += this.player.speed
+                if (key === "a" || key === "A") this.player.direction.x -= this.player.speed
+                else if (key === "d" || key === "D") this.player.direction.x += this.player.speed
+                if (key === "w" || key === "W") this.player.direction.y -= this.player.speed
+                else if (key === "s" || key === "S") this.player.direction.y += this.player.speed
 
-                if (key === 'k') this.blink(this.player.direction.x, this.player.direction.y)
-                if (key === 'l') this.shoot()
+                if (key === 'k' || key === "K") this.blink(this.player.direction.x, this.player.direction.y)
+                if (key === 'l' || key === "L") this.shoot()
             })
 
         }
@@ -219,7 +219,8 @@ class Scene extends React.Component {
     }
 
     handleKeyDown = (e) => {
-        if (e.key === "p") this.togglePause()
+        if (e.key === "p" || e.key === "P") this.togglePause()
+        if (e.key === "r" || e.key === "R") this.props.restart()
         else if (this.playerMovementMap.indexOf(e.key) === -1) this.playerMovementMap.push(e.key)
     }
 
@@ -319,13 +320,13 @@ class Scene extends React.Component {
             return (
                 <React.Fragment>
                     <Background />
-                    {/* <text
+                    <text
                         x="-950"
                         y="-512.5"
                         stroke="white"
                         fill="white"
-                    >{String(this.state.timer)} */}
-                    {/* </text> */}
+                    >{String(this.state.timer)}
+                    </text>
                     <text
                         x="0"
                         y="0"
@@ -353,7 +354,8 @@ class Scene extends React.Component {
                         key.body.position.y,
                         key.body.circleRadius,
                         key.coreColor,
-                        key.className))
+                        key.className,
+                        key.body.angle))
                     )}
                     {this.state.barriers.map((key) => <circle
                         className={key.className}

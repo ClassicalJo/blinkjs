@@ -28,7 +28,7 @@ class Select extends React.PureComponent {
                 {(!this.props.sakura) && <rect x={-225 + 400 / -2} y={-225 + 400 / -2} width="400" height="400" stroke="white" fill="rgba(0,0,0,0.85)" ></rect>}
 
                 {EnemySVG.nul(-225, 225, 50, "indigo")}
-                <rect x={-225 + 400 / -2} y={225 + 400 / -2} width="400" height="400" stroke="white" fill="transparent"></rect>
+                <rect x={-225 + 400 / -2} y={225 + 400 / -2} width="400" height="400" stroke="white" fill="transparent" onClick={() => this.props.select("scene3")}></rect>
                 {(!this.props.nul) && <rect x={-225 + 400 / -2} y={225 + 400 / -2} width="400" height="400" stroke="white" fill="rgba(0,0,0,0.85)" ></rect>}
 
                 {EnemySVG.vida(225,225,50, "#76c34e")}
@@ -40,10 +40,3 @@ class Select extends React.PureComponent {
     }
 }
 export default Select
-
-//Recibir informacion de que enemigos estan disponibles
-//son 4 bosses
-//Point and click
-//hacer click cambia el SceneSelected en app
-//si ya hay un scene selected, directamente pasa al juego
-

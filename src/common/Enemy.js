@@ -1,5 +1,4 @@
-import { Body, Bodies, World } from 'matter-js'
-import Target from "../common/TargetingSystem"
+import { Bodies, World } from 'matter-js'
 
 export class Enemy {
     constructor(x, y, r, hp, world) {
@@ -15,8 +14,6 @@ export class Enemy {
         this.dead = false
 
         World.add(world, this.body)
-
-        
 
         this.remove = () => {
             if (this.wait) clearTimeout(this.wait)

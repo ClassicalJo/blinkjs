@@ -1,12 +1,10 @@
 import React from 'react'
-import Target from '../../common/TargetingSystem'
+
 let sakura = {
     wing: (cx, cy, r) => {
         return (
             `
-            M${cx} ${cy + 2 * r}
-        
-            
+            M${cx} ${cy + 2 * r} 
             L${cx + r / 8} ${cy} 
             L${cx} ${cy - 2 * r} 
             L${cx - r / 8} ${cy} 
@@ -93,10 +91,10 @@ let EnemySVG = {
             </g>
         )
     },
-    nul: (cx, cy, r, coreColor, className) => {
+    nul: (cx, cy, r, coreColor, className, angle) => {
         return (
-            <g key={cx + cy + 7}>
-                <path key="9" d={nul.delta(cx, cy, r)} fill="purple"></path>
+            <g key={cx + cy + 7} transform={`rotate(${angle * 180 / Math.PI} ${cx} ${cy})`}>
+                <path key="9" d={nul.delta(cx, cy, r)} fill={r > 50 ? "transparent" : "purple"}></path>
                 <circle
                     key="8"
                     className={className}

@@ -44,7 +44,6 @@ let Target = {
         return { x: finalX, y: finalY }
     },
 
-
 }
 
 

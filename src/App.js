@@ -4,11 +4,9 @@ import Start from "./scenes/Start"
 import Select from './scenes/Select'
 import Scene1 from "./scenes/Scene1"
 import Scene2 from './scenes/Scene2'
+import Scene3 from './scenes/Scene3'
 import Victory from "./scenes/Victory"
 import "./assets/css/app.css"
-
-
-
 
 class App extends React.Component {
   constructor(props) {
@@ -16,7 +14,8 @@ class App extends React.Component {
     let svgHeight = window.innerHeight > window.innerWidth * 9 / 16 ? window.innerWidth * 9 / 16 : window.innerHeight
     let svgWidth = window.innerHeight > window.innerWidth * 9 / 16 ? window.innerWidth : window.innerHeight * 16 / 9
     this.state = {
-      currentScene: 'start',
+      // currentScene: 'start',
+      currentScene:"scene3",
       enemySelected: false,
       playMode: "keyboard",
       svgHeight: svgHeight,
@@ -27,7 +26,7 @@ class App extends React.Component {
       showIntro: true,
       sakura: true,
       blood: true,
-      nul: false,
+      nul: true,
       vida: false,
     }
   }
@@ -146,6 +145,18 @@ class App extends React.Component {
             victory={this.victory}
             restart={this.restart}
             showIntro={this.state.showIntro} />}
+        {this.state.currentScene === 'scene3' &&
+          <Scene3
+            svgHeight={this.state.svgHeight}
+            svgWidth={this.state.svgWidth}
+            innerHeight={this.state.innerHeight}
+            innerWidth={this.state.innerWidth}
+            offset={this.state.offset}
+            playMode={this.state.playMode}
+            victory={this.victory}
+            restart={this.restart}
+            showIntro={this.state.showIntro}
+          />}
         {this.state.currentScene === "victory" && <Victory />}
       </div>
     )
