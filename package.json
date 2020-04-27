@@ -41,7 +41,7 @@
     ]
   },
   "devDependencies": {
-    "nipplejs": "^0.8.4"
+    "nipplejs": "^0.8.4",
+    "poly-decomp": "^0.3.0"
   }
 }
-

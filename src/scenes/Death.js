@@ -1,6 +1,7 @@
 import React from 'react'
 import { Engine, Runner } from 'matter-js'
 import { Circle } from '../common/Bodies'
+import ViewBox from "../assets/svg/Viewbox"
 
 class Death extends React.Component {
     constructor(props) {
@@ -37,7 +38,10 @@ class Death extends React.Component {
     }
 
     handleKeyDown = e => {
-        if (e.key === "r" || e.key === "R") this.props.restart()
+        if (e.key === "r" || e.key === "R") {
+            this.props.setShowIntro(false)
+            this.props.sceneChange("select")
+        }
     }
 
     cycle = () => {
@@ -55,14 +59,15 @@ class Death extends React.Component {
 
     componentWillUnmount = () => {
         cancelAnimationFrame(this.loop)
-        Runner.stop(this.runner )
+        Runner.stop(this.runner)
         this.timeouts.forEach(key => clearTimeout(key))
         window.removeEventListener("keydown", this.handleKeyDown)
+
     }
 
     render() {
         return (
-            <React.Fragment>
+            <ViewBox>
                 {this.state.showPlayer === true &&
                     <rect
                         x={this.props.x - this.props.width / 2}
@@ -71,7 +76,7 @@ class Death extends React.Component {
                         height={this.props.height}
                         fill="pink" />}
                 {this.state.particles.map((key) => <circle
-                    key={this.state.particles.indexOf(key)}
+                    key={key.body.id}
                     className="playerGlow disappear"
                     cx={key.body.position.x}
                     cy={key.body.position.y}
@@ -86,8 +91,11 @@ class Death extends React.Component {
                             x="0"
                             y="0"
                             fill="rgba(255,255,255,0.2)"
-                            onClick={this.props.restart} 
-                            />
+                            onClick={() => {
+                                this.props.setShowIntro(false)
+                                this.props.sceneChange("select")
+                            }}
+                        />
                         <text
                             className="appear"
                             fill="white"
@@ -99,7 +107,7 @@ class Death extends React.Component {
                             Try again
                         </text>
                     </g>}
-            </React.Fragment>)
+            </ViewBox>)
     }
 }
 

@@ -1,7 +1,6 @@
 import Scene from '../common/Scene';
 import { Enemy } from '../common/Enemy'
 import { World, Body, Composite, Constraint, Bodies } from 'matter-js'
-import '../assets/css/scene2.css'
 import Target from '../common/TargetingSystem';
 import { nulBullet } from "../common/EnemyBullets"
 
@@ -9,19 +8,20 @@ import { nulBullet } from "../common/EnemyBullets"
 class Scene3 extends Scene {
     constructor(props) {
         super(props)
-        this.enemy = new Enemy(0, -500, 50, 225, this.world)
+        // this.enemy = new Enemy(51, -500, 50, 225, this.world)
+        this.enemy = new Enemy(51, -500, 50, 1, this.world)
         this.enemy.name = "nul"
         this.enemy.spin = 0
         this.enemy.stream = true
         this.enemy.coreColor = "indigo"
-        this.enemy.className = "appear"
-        
+
         this.nul = Composite.create({ bodies: [this.enemy.body] })
         World.add(this.world, this.nul)
         this.enemies.push(this.enemy)
         this.spin()
         this.schedule.push(
             () => this.setSpin(0.03),
+            () => this.goldenMovement(150, { x: -1, y: 1 }, 4, "vertical", this.next),
             () => this.intro(),
             () => this.setSpin(0.15),
             () => this.timeout(this.next, 500),
@@ -94,8 +94,6 @@ class Scene3 extends Scene {
 
     intro = () => {
         this.enemy.className = "nul"
-        this.moveBody(this.enemy.body, 0, -350, 1)
-
         if (this.props.showIntro) {
             this.setMessage("ENEMY #3: NUL", () => {
                 window.addEventListener("touchstart", this.theStart)
@@ -109,12 +107,8 @@ class Scene3 extends Scene {
     }
 
     spin = () => {
-        let interval = setInterval(() => {
-            if (this.enemy.body.angularSpeed !== -this.enemy.spin) {
-                Body.setAngularVelocity(this.enemy.body, -this.enemy.spin)
-            }
-        })
-        this.intervals.push(interval)
+        Body.setAngularVelocity(this.enemy.body, -this.enemy.spin)
+        this.timeout(() => this.spin(), 100)
     }
 
     setSpin = speed => {
@@ -125,19 +119,15 @@ class Scene3 extends Scene {
     fire = {
         bullets: () => {
             for (let i = 0; i < 3; i++) {
-                let bullet = this.timeout(() => new nulBullet(this.enemy.body.position.x, this.enemy.body.position.y, this.player.body.position.x, this.player.body.position.y, 5, 20, 0, this.world, this.bullets), 50 * i)
+                this.timeout(() => new nulBullet(this.enemy.body.position.x, this.enemy.body.position.y, this.player.body.position.x, this.player.body.position.y, 5, 20, 0, this.world, this.bullets), 50 * i)
             }
+            if (this.enemy.stream) this.timeout(() => this.fire.bullets(), 750)
         }
     }
     stream = {
         on: callback => {
-            let fireStream = setInterval(() => {
-                if (this.enemy.stream) {
-                    this.fire.bullets()
-                }
-                else clearInterval(fireStream)
-            }, 750)
-            this.intervals.push(fireStream)
+            this.enemy.stream = true
+            this.fire.bullets()
             if (callback) callback()
         },
         off: callback => {
@@ -223,7 +213,6 @@ class Scene3 extends Scene {
     }
 
     carousel = (spins, center, direction, speed, callback) => {
-        let origin = { ...this.enemy.body.position }
         let step = direction * Math.PI / 180
         for (let i = 0; i < 360 * spins; i++) {
             this.timeout(() => Composite.rotate(this.nul, step, center), i * (16 / speed))
@@ -232,12 +221,12 @@ class Scene3 extends Scene {
     }
 
     nulBomb = callback => {
-        let cluster = []
+        
         let bomb = new nulBullet(this.enemy.body.position.x, this.enemy.body.position.y, this.player.body.position.x, this.player.body.position.y, 10, 10, 0, this.world, this.bullets)
         this.timeout(() => {
             bomb.remove()
             for (let i = 0; i < 9; i++) {
-                let bullet = new nulBullet(bomb.body.position.x, bomb.body.position.y, bomb.body.position.x + Math.cos(2 * Math.PI / 9 * i), bomb.body.position.y + Math.sin(2 * Math.PI / 9 * i), 5, 10, 0, this.world, this.bullets)
+                new nulBullet(bomb.body.position.x, bomb.body.position.y, bomb.body.position.x + Math.cos(2 * Math.PI / 9 * i), bomb.body.position.y + Math.sin(2 * Math.PI / 9 * i), 5, 10, 0, this.world, this.bullets)
             }
 
 

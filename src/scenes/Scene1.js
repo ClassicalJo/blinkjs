@@ -7,7 +7,7 @@ import "../assets/css/scene1.css"
 class Scene1 extends Scene {
     constructor() {
         super()
-        this.enemy = new Enemy(0, -700, 50, 5, this.world)
+        this.enemy = new Enemy(0, -650, 50, 5, this.world)
         this.enemy.name = "sakura"
         this.enemy.coreColor = "pink"
         this.enemy.className = "sakura"
@@ -30,11 +30,11 @@ class Scene1 extends Scene {
     }
 
     intro = () => {
-        this.moveBody(this.enemy.body, 0, -350, 2, () => {
+        this.moveBody(this.enemy.body, 0, -350, 4, () => {
             this.timeout(() => {
                 this.outerBarrier = new SphereBarrier(0, -350, 70, 225, this.world)
                 this.barriers.push(this.outerBarrier)
-            }, 1000)
+            }, 500)
             this.timeout(() => {
                 if (this.props.showIntro) {
                     this.setMessage("ENEMY #1: SAKURA", () => {
@@ -46,7 +46,7 @@ class Scene1 extends Scene {
                     this.player.movement = true
                     this.next()
                 }
-            }, 2000)
+            }, 1000)
         })
     }
 

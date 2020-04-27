@@ -43,7 +43,13 @@ let Target = {
         let finalY = y + radius * Math.sin(theta)
         return { x: finalX, y: finalY }
     },
+    getCircularVelocity: (origin, position, target, angle, radius, speed) => {
+        let theta = getTheta(origin.x, origin.y, target.x, target.y) + angle
+        let destination = { x: target.x + radius * Math.cos(theta), y: target.y + radius * Math.sin(theta) }
+        let newTheta = getTheta(position.x, position.y, destination.x, destination.y)
+        return {x: speed * Math.cos(newTheta), y: speed * Math.sin(newTheta)}
 
+    }
 }
 
 
