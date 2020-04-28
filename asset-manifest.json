@@ -1,24 +1,23 @@
 {
   "files": {
     "main.css": "/blinkjs/static/css/main.9e411e5d.chunk.css",
-    "main.js": "/blinkjs/static/js/main.1a032aac.chunk.js",
-    "main.js.map": "/blinkjs/static/js/main.1a032aac.chunk.js.map",
+    "main.js": "/blinkjs/static/js/main.69e7207b.chunk.js",
+    "main.js.map": "/blinkjs/static/js/main.69e7207b.chunk.js.map",
     "runtime-main.js": "/blinkjs/static/js/runtime-main.97b97b03.js",
     "runtime-main.js.map": "/blinkjs/static/js/runtime-main.97b97b03.js.map",
-    "static/js/2.14fb289e.chunk.js": "/blinkjs/static/js/2.14fb289e.chunk.js",
-    "static/js/2.14fb289e.chunk.js.map": "/blinkjs/static/js/2.14fb289e.chunk.js.map",
+    "static/js/2.c79be21c.chunk.js": "/blinkjs/static/js/2.c79be21c.chunk.js",
+    "static/js/2.c79be21c.chunk.js.map": "/blinkjs/static/js/2.c79be21c.chunk.js.map",
     "index.html": "/blinkjs/index.html",
-    "precache-manifest.f14b80b4042665bc4b165be4953cf778.js": "/blinkjs/precache-manifest.f14b80b4042665bc4b165be4953cf778.js",
+    "precache-manifest.a1526a4636850d68cbf2f11836b70d5a.js": "/blinkjs/precache-manifest.a1526a4636850d68cbf2f11836b70d5a.js",
     "service-worker.js": "/blinkjs/service-worker.js",
     "static/css/main.9e411e5d.chunk.css.map": "/blinkjs/static/css/main.9e411e5d.chunk.css.map",
-    "static/js/2.14fb289e.chunk.js.LICENSE": "/blinkjs/static/js/2.14fb289e.chunk.js.LICENSE",
-    "static/media/keyboard.svg": "/blinkjs/static/media/keyboard.7938c350.svg",
-    "static/media/touchscreen.svg": "/blinkjs/static/media/touchscreen.4ab11d22.svg"
+    "static/js/2.c79be21c.chunk.js.LICENSE": "/blinkjs/static/js/2.c79be21c.chunk.js.LICENSE",
+    "static/media/keyboard.svg": "/blinkjs/static/media/keyboard.7938c350.svg"
   },
   "entrypoints": [
     "static/js/runtime-main.97b97b03.js",
-    "static/js/2.14fb289e.chunk.js",
+    "static/js/2.c79be21c.chunk.js",
     "static/css/main.9e411e5d.chunk.css",
-    "static/js/main.1a032aac.chunk.js"
+    "static/js/main.69e7207b.chunk.js"
   ]
 }
