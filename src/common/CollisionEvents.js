@@ -2,7 +2,7 @@ import { Events } from "matter-js"
 
 
 let collisionEvents = (player, engine, playerBullets) => {
-    Events.on(engine, 'collisionStart', (event) => {
+    Events.on(engine, 'collisionStart', event => {
         for (let i = 0; i < event.pairs.length; i++) {
             let pair = event.pairs[i]
 
@@ -22,6 +22,10 @@ let collisionEvents = (player, engine, playerBullets) => {
                     pair.bodyB.hp--
                     removeBullet(pair.bodyA, playerBullets)
                 }
+                else if (pair.bodyB.label === "clone") {
+                    pair.bodyB.genome.body.hp--
+                    removeBullet(pair.bodyA, playerBullets)
+                }
             }
 
             else if (pair.bodyB.label === "playerBullet") {
@@ -31,6 +35,10 @@ let collisionEvents = (player, engine, playerBullets) => {
                 }
                 else if (pair.bodyA.label === "enemy") {
                     pair.bodyA.hp--
+                    removeBullet(pair.bodyB, playerBullets)
+                }
+                else if (pair.bodyA.label === 'clone') {
+                    pair.bodyA.genome.body.hp--
                     removeBullet(pair.bodyB, playerBullets)
                 }
             }

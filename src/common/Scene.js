@@ -1,18 +1,17 @@
 import React from 'react'
-import { Body, Runner, Engine, Events, Composite } from 'matter-js'
+import { Body, Runner, Engine, Events, Composite, World } from 'matter-js'
 import { Rectangle } from '../common/Bodies'
 import PlayerBullet from "../common/PlayerBullet"
 import Frame from '../common/Frame'
-import Death from '../scenes/Death'
 import PlayerSVG from '../assets/svg/PlayerSVG';
 import EnemySVG from '../assets/svg/EnemySVG';
 import collisionEvents from '../common/CollisionEvents'
 import BulletsSVG from '../assets/svg/BulletsSVG'
 import Background from '../assets/svg/Background'
-import Touchscreen from "../assets/svg/Touchscreen"
 import Viewbox from '../assets/svg/Viewbox'
 import { AimedBullet } from '../common/EnemyBullets'
 import Target from "../common/TargetingSystem"
+import Pause from "./Pause"
 
 class Scene extends React.Component {
     constructor(props) {
@@ -27,12 +26,13 @@ class Scene extends React.Component {
             barriers: [],
             enemies: [],
             message: "",
+            pause: false,
         }
         this.message = ""
         this.timeouts = []
         this.intervals = []
         this.pause = false
-        
+
         this.schedule = []
 
 
@@ -80,8 +80,14 @@ class Scene extends React.Component {
         this.cycle()
     }
 
-    componentWillUnmount = () => {
+    resetGame = () => {
         Runner.stop(this.runner)
+        World.clear(this.world)
+        Engine.clear(this.engine)
+    }
+
+    componentWillUnmount = () => {
+        this.resetGame()
         cancelAnimationFrame(this.loop)
         this.intervals.forEach((key) => clearInterval(key))
         this.timeouts.forEach((key) => clearTimeout(key))
@@ -89,7 +95,6 @@ class Scene extends React.Component {
             window.removeEventListener("keydown", this.handleKeyDown, true)
             window.removeEventListener("keyup", this.handleKeyUp, true)
         }
-
     }
 
     cycle = () => {
@@ -107,37 +112,30 @@ class Scene extends React.Component {
     }
 
     togglePause = () => {
-        if (this.pause) {
+        if (this.state.pause) {
+            this.setState({ pause: false })
             this.cycle()
             Runner.run(this.runner, this.engine)
-            this.pause = false
+
         }
         else {
+            this.setState({ pause: true })
             cancelAnimationFrame(this.loop)
             Runner.stop(this.runner)
-            this.pause = true
         }
     }
 
     updateCycle = () => {
-        if (this.player.dead === true) {
-            window.removeEventListener("keydown", this.handleKeyDown, true)
-            window.removeEventListener("keyup", this.handleKeyUp, false)
-            cancelAnimationFrame(this.loop)
-            Runner.stop(this.runner)
-            this.timeouts.forEach((key) => clearTimeout(key))
-        }
-
         if (this.props.playMode === "keyboard" && (this.player.movement)) {
             this.player.direction = { x: 0, y: 0 }
             this.playerMovementMap.forEach(key => {
-                if (key === "a") this.player.direction.x -= this.player.speed
-                else if (key === "d") this.player.direction.x += this.player.speed
-                if (key === "w") this.player.direction.y -= this.player.speed
-                else if (key === "s") this.player.direction.y += this.player.speed
+                if (key === "a" || key === "A") this.player.direction.x -= this.player.speed
+                else if (key === "d" || key === "D") this.player.direction.x += this.player.speed
+                if (key === "w" || key === "W") this.player.direction.y -= this.player.speed
+                else if (key === "s" || key === "S") this.player.direction.y += this.player.speed
 
-                if (key === 'k') this.blink(this.player.direction.x, this.player.direction.y)
-                if (key === 'l') this.shoot()
+                if (key === 'k' || key === "K") this.blink(this.player.direction.x, this.player.direction.y)
+                if (key === 'l' || key === "L") this.shoot()
             })
 
         }
@@ -162,10 +160,14 @@ class Scene extends React.Component {
             }
             for (let i = 0; i < this.enemies.length; i++) {
                 if (this.enemies[i].body.hp <= 0) {
+                    let victoryData = {
+                        enemy: {...this.enemy},
+                        player: {...this.player},
+                    }
+                    this.timeout(() => this.props.victory(victoryData), 0)
                     this.enemies[i].remove()
                     this.enemies.splice(i, 1)
                     i--
-                    this.props.victory()
                 }
 
             }
@@ -190,19 +192,12 @@ class Scene extends React.Component {
 
             return { player, playerBullets, bullets, bouncers, enemies, barriers, timer, message }
         })
-    }
+        if (this.player.dead === true) {
+            this.timeout(() => {
+                this.props.death(this.state.player)
+                this.props.sceneChange("death")
+            }, 0)
 
-    handleTouch = (angle) => {
-        if (this.player.movement) {
-            if (angle === -1) this.player.direction = { x: 0, y: 0 }
-            else if (angle > 22.50 && angle < 67.5) this.player.direction = { x: this.player.speed, y: -this.player.speed }
-            else if (angle > 67.5 && angle < 112.5) this.player.direction = { x: 0, y: -this.player.speed }
-            else if (angle > 112.5 && angle < 157.5) this.player.direction = { x: -this.player.speed, y: -this.player.speed }
-            else if (angle > 157.5 && angle < 202.5) this.player.direction = { x: -this.player.speed, y: 0 }
-            else if (angle > 202.5 && angle < 247.5) this.player.direction = { x: -this.player.speed, y: this.player.speed }
-            else if (angle > 247.5 && angle < 292.5) this.player.direction = { x: 0, y: this.player.speed }
-            else if (angle > 292.5 && angle < 337.5) this.player.direction = { x: this.player.speed, y: this.player.speed }
-            else this.player.direction = { x: this.player.speed, y: 0 }
         }
     }
 
@@ -219,7 +214,11 @@ class Scene extends React.Component {
     }
 
     handleKeyDown = (e) => {
-        if (e.key === "p") this.togglePause()
+        if (e.key === "p" || e.key === "P") this.togglePause()
+        if (e.key === "r" || e.key === "R") {
+            this.props.setShowIntro(false)
+            this.props.sceneChange("select")
+        }
         else if (this.playerMovementMap.indexOf(e.key) === -1) this.playerMovementMap.push(e.key)
     }
 
@@ -242,13 +241,12 @@ class Scene extends React.Component {
                 let theta = Math.atan2(this.player.body.position.y + this.player.direction.y - this.player.body.position.y, this.player.body.position.x + this.player.direction.x - this.player.body.position.x)
                 theta = (theta > 0 ? theta : (2 * Math.PI + theta)) * 360 / (2 * Math.PI)
                 theta = theta * Math.PI / 180
-
                 finalX = this.player.body.position.x + this.player.blinkDistance * Math.cos(theta)
                 finalY = this.player.body.position.y + this.player.blinkDistance * Math.sin(theta)
 
             }
-            if (Math.abs(finalX) > 950) finalX = this.player.direction.x / Math.abs(this.player.direction.x) * 950
-            if (Math.abs(finalY) > 512.5) finalY = this.player.direction.y / Math.abs(this.player.direction.y) * 512.5
+            if (Math.abs(finalX) > 950) finalX = 950 * (finalX < 0 ? -1 : 1)
+            if (Math.abs(finalY) > 512.5) finalY = 512.5 * (finalY < 0 ? -1 : 1)
             Body.setPosition(this.player.body, { x: finalX, y: finalY })
         }
     }
@@ -264,17 +262,16 @@ class Scene extends React.Component {
     }
 
     setMessage = (string, callback) => {
-        let array = String(string).split("")
-        let message = ""
+        let array = string.split("")
+        this.message = ""
         for (let i = 0; i < array.length; i++) {
             this.timeout(() => {
-                message = message + array[i]
-                this.message = message
+                this.message = this.message.concat(array[i])
             }, 100 * i)
         }
         this.timeout(() => {
-            if(callback) callback()
-        }, 100 * array.length + 500)
+            if (callback) callback()
+        }, 100 * array.length + 250)
     }
 
     moveBody = (body, targetX, targetY, speed, callback) => {
@@ -296,7 +293,6 @@ class Scene extends React.Component {
 
     theStart = () => {
         window.removeEventListener("keydown", this.theStart)
-        window.removeEventListener("touchstart", this.theStart)
         this.player.movement = true
         this.setMessage(" ", this.next)
     }
@@ -319,13 +315,13 @@ class Scene extends React.Component {
             return (
                 <React.Fragment>
                     <Background />
-                    {/* <text
+                    <text
                         x="-950"
                         y="-512.5"
                         stroke="white"
                         fill="white"
-                    >{String(this.state.timer)} */}
-                    {/* </text> */}
+                    >{String(this.state.timer)}
+                    </text>
                     <text
                         x="0"
                         y="0"
@@ -336,9 +332,6 @@ class Scene extends React.Component {
                         textAnchor="middle"
                     >{String(this.state.message)}
                     </text>
-                    <filter id="blur">
-                        <feGaussianBlur stdDeviation="2" />
-                    </filter>
                     {this.state.bullets.map((key) => BulletsSVG[key.body.label](key))}
                     {this.state.playerBullets.map((key) =>
                         <circle
@@ -348,13 +341,7 @@ class Scene extends React.Component {
                             r={key.radius}
                             fill="white">
                         </circle>)}
-                    {this.state.enemies.map((key => EnemySVG[key.name](
-                        key.body.position.x,
-                        key.body.position.y,
-                        key.body.circleRadius,
-                        key.coreColor,
-                        key.className))
-                    )}
+                    {this.state.enemies.map((key => EnemySVG[key.name](key)))}
                     {this.state.barriers.map((key) => <circle
                         className={key.className}
                         key={this.state.barriers.indexOf(key)}
@@ -376,38 +363,22 @@ class Scene extends React.Component {
                         stroke="rgba(255,255,255,0.5"
                         fill="transparent"
                     />
+                    {(this.state.pause) && <Pause
+                        setShowIntro={this.props.setShowIntro}
+                        sceneChange={this.props.sceneChange}
+                        selectEnemy={this.props.selectEnemy}
+                    />}
                 </React.Fragment>
             )
-        } else {
-            return (
-                <Death
-                    x={this.state.player.body.position.x}
-                    y={this.state.player.body.position.y}
-                    width={this.state.player.width}
-                    height={this.state.player.height}
-                    restart={this.props.restart}
-
-                />)
         }
     }
 
     render() {
         return (
-            <React.Fragment>
-                <Viewbox>
-                    {this.renderScene()}
-                </Viewbox>
-                {(this.props.playMode === "touchscreen") && (this.player.dead !== true) &&
-                    <Touchscreen
-                        svgHeight={this.props.svgHeight}
-                        svgWidth={this.props.svgWidth}
-                        innerHeight={this.props.innerHeight}
-                        innerWidth={this.props.innerWidth}
-                        offset={this.props.offset}
-                        move={(position) => this.handleTouch(position)}
-                        blink={() => this.blink()}
-                        shoot={() => this.shoot()} />}
-            </React.Fragment>
+            <Viewbox>
+                {this.renderScene()}
+            </Viewbox>
+
         )
     }
 }

@@ -4,10 +4,13 @@ import Start from "./scenes/Start"
 import Select from './scenes/Select'
 import Scene1 from "./scenes/Scene1"
 import Scene2 from './scenes/Scene2'
+import Scene3 from './scenes/Scene3'
+import Scene4 from "./scenes/Scene4"
+import Scene5 from "./scenes/Scene5"
 import Victory from "./scenes/Victory"
 import "./assets/css/app.css"
-
-
+import Death from './scenes/Death';
+import { withCookies } from "react-cookie"
 
 
 class App extends React.Component {
@@ -15,9 +18,12 @@ class App extends React.Component {
     super(props);
     let svgHeight = window.innerHeight > window.innerWidth * 9 / 16 ? window.innerWidth * 9 / 16 : window.innerHeight
     let svgWidth = window.innerHeight > window.innerWidth * 9 / 16 ? window.innerWidth : window.innerHeight * 16 / 9
+
+    this.cookies = props.cookies;
+
     this.state = {
-      currentScene: 'start',
-      enemySelected: false,
+      currentScene: "start",
+      enemySelected: "none",
       playMode: "keyboard",
       svgHeight: svgHeight,
       svgWidth: svgWidth,
@@ -25,11 +31,19 @@ class App extends React.Component {
       innerHeight: window.innerHeight,
       offset: (window.innerWidth - svgWidth) / 2,
       showIntro: true,
-      sakura: true,
-      blood: true,
-      nul: false,
-      vida: false,
+      sakura: this.cookies.get("sakura") !== undefined ? false : true,
+      blood: this.cookies.get("blood") !== undefined ? false : true,
+      nul: this.cookies.get("nul") !== undefined ? false : true,
+      vida: this.cookies.get("vida") !== undefined ? false : true,
+      death: {
+        x: 0,
+        y: 0,
+        width: 25,
+        height: 25,
+      }
     }
+
+
   }
 
   componentDidMount = () => {
@@ -53,104 +67,128 @@ class App extends React.Component {
     })
   }
 
-  selectEnemy = (string) => {
+  selectEnemy = string => {
     this.setState({
-      enemySelected: string
-    })
-    this.game()
-  }
-  game = () => {
-    this.setState((prevState) => ({
-      currentScene: prevState.enemySelected
-    }))
-  }
-  controller = () => {
-    this.setState({
-      currentScene: "controller"
+      enemySelected: string,
+      currentScene: string
     })
   }
 
-  keyboard = () => {
+
+  sceneChange = string => {
     this.setState({
-      playMode: "keyboard",
-      currentScene: "start"
+      currentScene: string
     })
   }
 
-  touchscreen = () => {
+  setShowIntro = boolean => {
     this.setState({
-      playMode: "touchscreen",
-      currentScene: 'start'
+      showIntro: boolean
     })
   }
 
-  start = () => {
-    this.setState({
-      currentScene: "select"
-    })
+  victory = (victoryData) => {
+    let currentDate = new Date()
+    this.cookies.set(victoryData.enemy.name, "vencido", { expires: new Date(currentDate.getFullYear() + 1, currentDate.getMonth(), currentDate.getDate(), 0, 0, 0, 0), path: '/' })
 
-  }
-  restart = () => {
     this.setState({
-      showIntro: false,
-      currentScene: "select"
+      [victoryData.enemy.name]: false,
+      enemySelected: "none",
+      currentScene: 'victory',
+      showIntro: true,
+      victory: { ...victoryData }
     })
   }
 
-  victory = () => {
+  death = playerData => {
     this.setState({
-      currentScene: 'victory'
+      death: {
+        x: playerData.body.position.x,
+        y: playerData.body.position.y,
+        width: playerData.width,
+        height: playerData.height,
+      }
+    })
+  }
+
+  eraseCookies = () => {
+    this.cookies.remove("sakura")
+    this.cookies.remove("blood")
+    this.cookies.remove("nul")
+    this.cookies.remove("vida")
+    this.cookies.remove("ava")
+    this.setState({
+      sakura: true,
+      blood: true,
+      nul: true,
+      vida: true,
+
     })
   }
   render() {
+    const sceneProps = {
+      svgHeight: this.state.svgHeight,
+      svgWidth: this.state.svgWidth,
+      innerHeight: this.state.innerHeight,
+      innerWidth: this.state.innerWidth,
+      offset: this.state.offset,
+      playMode: this.state.playMode,
+      sceneChange: this.sceneChange,
+      showIntro: this.state.showIntro,
+      enemySelected: this.state.enemySelected,
+      death: this.death,
+      setShowIntro: this.setShowIntro,
+      selectEnemy: this.selectEnemy,
+      victory: this.victory,
+    }
     return (
       <div className="svg-container" >
         {this.state.currentScene === "start" &&
           <Start
-            start={this.start}
-            controller={this.controller}
+            sceneChange={this.sceneChange}
+            erase={this.eraseCookies}
           />}
         {this.state.currentScene === "controller" &&
           <Controller
-            keyboard={this.keyboard}
-            touchscreen={this.touchscreen} />}
+            sceneChange={this.sceneChange}
+          />}
         {this.state.currentScene === "select" &&
           <Select
             blood={this.state.blood}
             sakura={this.state.sakura}
             vida={this.state.vida}
             nul={this.state.nul}
+            selectEnemy={this.selectEnemy}
             enemySelected={this.state.enemySelected}
-            select={this.selectEnemy}
-          >
-          </Select>}
-        {this.state.currentScene === "scene1" &&
-          <Scene1
-            svgHeight={this.state.svgHeight}
-            svgWidth={this.state.svgWidth}
-            innerHeight={this.state.innerHeight}
-            innerWidth={this.state.innerWidth}
-            offset={this.state.offset}
-            playMode={this.state.playMode}
-            victory={this.victory}
-            restart={this.restart}
-            showIntro={this.state.showIntro} />}
-        {this.state.currentScene === "scene2" &&
-          <Scene2
-            svgHeight={this.state.svgHeight}
-            svgWidth={this.state.svgWidth}
-            innerHeight={this.state.innerHeight}
-            innerWidth={this.state.innerWidth}
-            offset={this.state.offset}
-            playMode={this.state.playMode}
-            victory={this.victory}
-            restart={this.restart}
-            showIntro={this.state.showIntro} />}
-        {this.state.currentScene === "victory" && <Victory />}
+            sceneChange={this.sceneChange}
+          />}
+        {this.state.currentScene === "death" &&
+          <Death
+            x={this.state.death.x}
+            y={this.state.death.y}
+            width={this.state.death.width}
+            height={this.state.death.height}
+            sceneChange={this.sceneChange}
+            setShowIntro={this.setShowIntro}
+          />}
+        {this.state.currentScene === "victory" &&
+          <Victory
+            setShowIntro={this.setShowIntro}
+            selectEnemy={this.selectEnemy}
+            sceneChange={this.sceneChange}
+            victoryData={this.state.victory}
+          />}
+
+        {this.state.currentScene === "scene1" && <Scene1 {...sceneProps} />}
+        {this.state.currentScene === "scene2" && <Scene2 {...sceneProps} />}
+        {this.state.currentScene === 'scene3' && <Scene3 {...sceneProps} />}
+        {this.state.currentScene === 'scene4' && <Scene4 {...sceneProps} />}
+        {this.state.currentScene === 'scene5' && <Scene5 {...sceneProps} />}
+
       </div>
     )
   }
 }
 
 
-export default App;
+export default withCookies(App);

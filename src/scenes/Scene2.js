@@ -1,9 +1,8 @@
 import Scene from '../common/Scene'
 import { Enemy, Satellite, } from '../common/Enemy'
-import { World, Composite, Bodies, Body, Constraint } from 'matter-js'
+import { World, Composite } from 'matter-js'
 import Target from "../common/TargetingSystem"
-import SphereBarrier from '../common/SphereBarrier'
-import '../assets/css/scene2.css'
+import "../assets/css/scene2.css"
 import { Laser, AimLaser, AimedBullet } from '../common/EnemyBullets'
 
 class Scene2 extends Scene {
@@ -14,13 +13,13 @@ class Scene2 extends Scene {
         this.enemy.coreColor = "red"
         this.enemy.className = "appear"
 
-        this.phobos = new Satellite(0, -325, 5, this.world)
+        this.phobos = new Satellite(0, -387.5, 5, this.world)
         this.phobos.name = "satellite"
         this.phobos.coreColor = "red"
         this.phobos.className = "appear"
 
 
-        this.deimos = new Satellite(0, -375, 5, this.world)
+        this.deimos = new Satellite(0, -312.5, 5, this.world)
         this.deimos.name = "satellite"
         this.deimos.coreColor = "red"
         this.deimos.className = "appear"
@@ -33,7 +32,6 @@ class Scene2 extends Scene {
         World.add(this.world, [this.enemy.body, this.phobos.body, this.deimos.body])
         this.enemies.push(this.enemy, this.phobos, this.deimos)
 
-        this.enableOrbit = true
         this.orbitMaxSpeed = 15 * Math.PI / 180
         this.orbitSpeedPower = 5
         this.orbit = setInterval(() => { if (this.enableOrbit === true) Composite.rotate(this.blood, this.orbitMaxSpeed * this.orbitSpeedPower / 100, { x: this.enemy.body.position.x, y: this.enemy.body.position.y }) }, 8)
@@ -44,12 +42,10 @@ class Scene2 extends Scene {
             }
             clearInterval(this.bloodyCheck)
         }, 20)
-        
+
         this.intervals.push(this.orbit, this.bloodyCheck)
         this.schedule.push(
             () => this.intro(),
-            () => this.timeout(this.next, 500),
-
             () => this.deploy(-800, -200, 10, () => this.timeout(this.next, 500)),
             () => this.rotateBlood(270 * Math.PI / 180, 4, () => this.timeout(this.next, 500)),
             () => this.aimAndRotate(() => this.timeout(this.next, 1000)),
@@ -118,25 +114,22 @@ class Scene2 extends Scene {
 
     intro = () => {
         this.timeout(() => {
-            this.enableOrbit = false
             let bodyArray = [this.enemy, this.phobos, this.deimos]
             bodyArray.forEach(key => key.className = "blood")
-            this.moveBody(this.phobos.body, 0, -425, 0.4,
-                () => this.moveBody(this.deimos.body, 0, -275, 0.4,
-                    () => this.timeout(() => this.rotateBlood(270 * Math.PI / 180, 4, () => {
-                        if (this.props.showIntro) {
-                            this.setMessage("ENEMY #2: BLOOD", () => {
-                                window.addEventListener("touchstart", this.theStart)
-                                window.addEventListener("keydown", this.theStart)
-                            })
-                        }
-                        else {
-                            this.player.movement = true
-                            this.next()
-                        }
-                    }), 500)))
-
-        }, 2000)
+            this.moveBody(this.phobos.body, 0, -425, 0.4)
+            this.moveBody(this.deimos.body, 0, -275, 0.4,
+                () => this.timeout(() => this.rotateBlood(270 * Math.PI / 180, 4, () => {
+                    if (this.props.showIntro) {
+                        this.setMessage("ENEMY #2: BLOOD", () => {
+                            window.addEventListener("keydown", this.theStart)
+                        })
+                    }
+                    else {
+                        this.player.movement = true
+                        this.next()
+                    }
+                }), 500))
+        }, 500)
     }
 
 
