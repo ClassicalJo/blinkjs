@@ -8,8 +8,7 @@ import { Laser, AimLaser, AimedBullet } from '../common/EnemyBullets'
 class Scene2 extends Scene {
     constructor() {
         super()
-        // this.enemy = new Enemy(0, -350, 50, 225, this.world)
-        this.enemy = new Enemy(0, -350, 50, 1, this.world)
+        this.enemy = new Enemy(0, -350, 50, 225, this.world)
         this.enemy.name = "blood"
         this.enemy.coreColor = "red"
         this.enemy.className = "appear"
@@ -122,7 +121,6 @@ class Scene2 extends Scene {
                 () => this.timeout(() => this.rotateBlood(270 * Math.PI / 180, 4, () => {
                     if (this.props.showIntro) {
                         this.setMessage("ENEMY #2: BLOOD", () => {
-                            window.addEventListener("touchstart", this.theStart)
                             window.addEventListener("keydown", this.theStart)
                         })
                     }

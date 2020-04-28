@@ -28,7 +28,6 @@ class Scene3 extends Scene {
     intro = () => {
         if (this.props.showIntro) {
             this.setMessage("ENEMY #3: NUL", () => {
-                window.addEventListener("touchstart", this.theStart)
                 window.addEventListener("keydown", this.theStart)
             })
         }

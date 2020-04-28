@@ -10,15 +10,18 @@ import Scene5 from "./scenes/Scene5"
 import Victory from "./scenes/Victory"
 import "./assets/css/app.css"
 import Death from './scenes/Death';
-import Touchscreen from './assets/svg/Touchscreen';
+import { withCookies } from "react-cookie"
+
 
 class App extends React.Component {
   constructor(props) {
     super(props);
     let svgHeight = window.innerHeight > window.innerWidth * 9 / 16 ? window.innerWidth * 9 / 16 : window.innerHeight
     let svgWidth = window.innerHeight > window.innerWidth * 9 / 16 ? window.innerWidth : window.innerHeight * 16 / 9
+
+    this.cookies = props.cookies;
+
     this.state = {
-      // currentScene: 'start',
       currentScene: "start",
       enemySelected: "none",
       playMode: "keyboard",
@@ -28,18 +31,19 @@ class App extends React.Component {
       innerHeight: window.innerHeight,
       offset: (window.innerWidth - svgWidth) / 2,
       showIntro: true,
-      sakura: true,
-      blood: true,
-      nul: true,
-      vida: true,
+      sakura: this.cookies.get("sakura") !== undefined ? false : true,
+      blood: this.cookies.get("blood") !== undefined ? false : true,
+      nul: this.cookies.get("nul") !== undefined ? false : true,
+      vida: this.cookies.get("vida") !== undefined ? false : true,
       death: {
         x: 0,
         y: 0,
         width: 25,
         height: 25,
       }
-
     }
+
+
   }
 
   componentDidMount = () => {
@@ -83,12 +87,16 @@ class App extends React.Component {
     })
   }
 
-  victory = boss => {
+  victory = (victoryData) => {
+    let currentDate = new Date()
+    this.cookies.set(victoryData.enemy.name, "vencido", { expires: new Date(currentDate.getFullYear() + 1, currentDate.getMonth(), currentDate.getDate(), 0, 0, 0, 0), path: '/' })
+
     this.setState({
-      [boss]: false,
+      [victoryData.enemy.name]: false,
       enemySelected: "none",
       currentScene: 'victory',
       showIntro: true,
+      victory: { ...victoryData }
     })
   }
 
@@ -100,6 +108,21 @@ class App extends React.Component {
         width: playerData.width,
         height: playerData.height,
       }
+    })
+  }
+
+  eraseCookies = () => {
+    this.cookies.remove("sakura")
+    this.cookies.remove("blood")
+    this.cookies.remove("nul")
+    this.cookies.remove("vida")
+    this.cookies.remove("ava")
+    this.setState({
+      sakura: true,
+      blood: true,
+      nul: true,
+      vida: true,
+
     })
   }
   render() {
@@ -123,6 +146,7 @@ class App extends React.Component {
         {this.state.currentScene === "start" &&
           <Start
             sceneChange={this.sceneChange}
+            erase={this.eraseCookies}
           />}
         {this.state.currentScene === "controller" &&
           <Controller
@@ -152,8 +176,9 @@ class App extends React.Component {
             setShowIntro={this.setShowIntro}
             selectEnemy={this.selectEnemy}
             sceneChange={this.sceneChange}
+            victoryData={this.state.victory}
           />}
-          
+
         {this.state.currentScene === "scene1" && <Scene1 {...sceneProps} />}
         {this.state.currentScene === "scene2" && <Scene2 {...sceneProps} />}
         {this.state.currentScene === 'scene3' && <Scene3 {...sceneProps} />}
@@ -166,4 +191,4 @@ class App extends React.Component {
 }
 
 
-export default App;
+export default withCookies(App);

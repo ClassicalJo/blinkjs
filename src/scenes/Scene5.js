@@ -173,25 +173,26 @@ class Scene5 extends Scene {
             return missile
         },
         cannon: (origin, target, callback) => {
-            let angle = Math.atan2(target.y - origin.y, target.x - origin.x)
-            let aim = new avaAim(origin.x, origin.y, 2000, 5, angle, this.world, this.bullets)
+            let aim = new avaAim(origin.x, origin.y, 2000, 5, Math.atan2(target.y - origin.y, target.x - origin.x), this.world, this.bullets)
+            aim.currentAngle = Math.atan2(target.y - origin.y, target.x - origin.x)
+
             for (let i = 0; i < 667; i += 10) {
                 this.timeout(() => {
                     let newAngle = Math.atan2(target.y - origin.y, target.x - origin.x)
-                    if (Math.abs(newAngle - angle) < Math.PI / 360) Body.rotate(aim.body, 0, origin)
-                    else if (newAngle > angle) {
+                    if (Math.abs(newAngle - aim.currentAngle) < Math.PI / 360) Body.rotate(aim.body, 0, origin)
+                    else if (newAngle > aim.currentAngle) {
                         Body.rotate(aim.body, Math.PI / 360, origin)
-                        angle += Math.PI / 360
+                        aim.currentAngle += Math.PI / 360
                     }
-                    else if (newAngle < angle) {
+                    else if (newAngle < aim.currentAngle) {
                         Body.rotate(aim.body, -Math.PI / 360, origin)
-                        angle += -Math.PI / 360
+                        aim.currentAngle += -Math.PI / 360
                     }
                 }, i)
             }
             this.timeout(() => {
                 aim.remove()
-                let cannon = new avaCannon(origin.x, origin.y, 100, 5, angle, this.world, this.bullets)
+                let cannon = new avaCannon(origin.x, origin.y, 100, 5, aim.currentAngle, this.world, this.bullets)
                 let composite = Composite.create({ bodies: [cannon.body] })
                 for (let i = 1; i <= 18; i++) {
                     this.timeout(() => {
@@ -326,7 +327,6 @@ class Scene5 extends Scene {
     intro = () => {
         if (this.props.showIntro) {
             this.setMessage("ENEMY #?: AVA", () => {
-                window.addEventListener("touchstart", this.theStart)
                 window.addEventListener("keydown", this.theStart)
             })
         }

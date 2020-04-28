@@ -138,8 +138,8 @@ let EnemySVG = {
         )
     },
     ava: key => {
-        let outerRing = new Array(0, 90)
-        let innerRing = new Array(0, -90, -135)
+        let outerRing = [0, 90]
+        let innerRing = [0, -90, -135]
         return (
             <g key={key.body.id} transform={`rotate(${key.body.angle * 180 / Math.PI} ${key.body.position.x} ${key.body.position.y})`}>
                 {innerRing.map(ring => (

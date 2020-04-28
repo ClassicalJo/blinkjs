@@ -42,6 +42,7 @@
   },
   "devDependencies": {
     "nipplejs": "^0.8.4",
-    "poly-decomp": "^0.3.0"
+    "poly-decomp": "^0.3.0",
+    "react-cookie": "^4.0.3"
   }
 }

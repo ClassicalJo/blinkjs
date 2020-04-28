@@ -8,8 +8,7 @@ import { vidaBullet, vidaLaser, vidaWave } from "../common/EnemyBullets"
 class Scene4 extends Scene {
     constructor(props) {
         super(props)
-        // this.enemy = new Enemy(0, -350, 10, 250, this.world)
-        this.enemy = new Enemy(0, -350, 10, 1, this.world)
+        this.enemy = new Enemy(0, -350, 10, 250, this.world)
         this.enemy.name = "vida"
         this.enemy.coreColor = "#76C34E"
         this.enemy.className = "vida"
@@ -102,7 +101,6 @@ class Scene4 extends Scene {
     intro = () => {
         if (this.props.showIntro) {
             this.setMessage("ENEMY #4: VIDA", () => {
-                window.addEventListener("touchstart", this.theStart)
                 window.addEventListener("keydown", this.theStart)
             })
         }

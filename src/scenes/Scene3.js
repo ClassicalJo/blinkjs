@@ -8,8 +8,7 @@ import { nulBullet } from "../common/EnemyBullets"
 class Scene3 extends Scene {
     constructor(props) {
         super(props)
-        // this.enemy = new Enemy(51, -500, 50, 225, this.world)
-        this.enemy = new Enemy(51, -500, 50, 1, this.world)
+        this.enemy = new Enemy(51, -500, 50, 225, this.world)
         this.enemy.name = "nul"
         this.enemy.spin = 0
         this.enemy.stream = true
@@ -96,7 +95,6 @@ class Scene3 extends Scene {
         this.enemy.className = "nul"
         if (this.props.showIntro) {
             this.setMessage("ENEMY #3: NUL", () => {
-                window.addEventListener("touchstart", this.theStart)
                 window.addEventListener("keydown", this.theStart)
             })
         }

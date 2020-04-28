@@ -38,7 +38,6 @@ class Scene1 extends Scene {
             this.timeout(() => {
                 if (this.props.showIntro) {
                     this.setMessage("ENEMY #1: SAKURA", () => {
-                        window.addEventListener("touchstart", this.theStart)
                         window.addEventListener("keydown", this.theStart)
                     })
                 }
