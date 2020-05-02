@@ -2,13 +2,19 @@ import Scene from '../common/Scene'
 import { Enemy, Satellite, } from '../common/Enemy'
 import { World, Composite } from 'matter-js'
 import Target from "../common/TargetingSystem"
-import "../assets/css/scene2.css"
 import { Laser, AimLaser, AimedBullet } from '../common/EnemyBullets'
+import { Howl } from 'howler'
+import bloodLaser from "../assets/sounds/sfx/blood_laser.wav"
+import bloodExplosion from "../assets/sounds/sfx/blood_explosion.wav"
+import bloodMovement from "../assets/sounds/sfx/blood_movement.wav"
+import bloodShotgun from "../assets/sounds/sfx/blood_shotgun.wav"
+import bloodBullet from "../assets/sounds/sfx/blood_bullet.wav"
 
 class Scene2 extends Scene {
     constructor() {
         super()
-        this.enemy = new Enemy(0, -350, 50, 225, this.world)
+        
+        this.enemy = new Enemy(0, -350, 50, 250, this.world)
         this.enemy.name = "blood"
         this.enemy.coreColor = "red"
         this.enemy.className = "appear"
@@ -28,7 +34,7 @@ class Scene2 extends Scene {
         Composite.add(this.blood, this.enemy.body)
         Composite.add(this.blood, this.phobos.body)
         Composite.add(this.blood, this.deimos.body)
-
+        
         World.add(this.world, [this.enemy.body, this.phobos.body, this.deimos.body])
         this.enemies.push(this.enemy, this.phobos, this.deimos)
 
@@ -67,15 +73,15 @@ class Scene2 extends Scene {
             () => this.verticalSweep(925),
 
             () => this.horizontalClean(925, 500),
-            () => this.fireBarrage(),
+            () => null,
             () => this.horizontalSweep(500),
 
             () => this.verticalClean(-925, 500),
-            () => this.fireBarrage(),
+            () => null,
             () => this.verticalSweep(-925),
 
             () => this.horizontalClean(925, -500),
-            () => this.fireBarrage(),
+            () => null,
             () => this.horizontalSweep(-500),
             () => this.timeout(this.next, 1000),
 
@@ -94,21 +100,48 @@ class Scene2 extends Scene {
         )
         this.step = this.scheduleStart()
         this.schedule[this.step.next().value]()
+
+        this.sfx.blood = {
+            movement: new Howl({
+                src: [bloodMovement],
+                preload: true,
+            }),
+            shotgun: new Howl({
+                src: [bloodShotgun],
+                preload: true,
+            }),
+            laser: new Howl({
+                src: [bloodLaser],
+                preload: true,
+                volume: 0.35
+            }),
+            explosion: new Howl({
+                src: [bloodExplosion],
+                preload: true,
+                volume: 0.35
+            }),
+            bullet: new Howl({
+                src: [bloodBullet],
+                preload: true,
+            })
+        }
     }
 
 
 
     fireBarrage = () => {
-        this.bloodFire()
-        this.timeout(() => this.bloodFire(), 500)
-        this.timeout(() => this.bloodFire(), 1000)
-        this.timeout(() => this.bloodFire(), 1500)
-        this.timeout(() => this.bloodFire(), 2000)
+        for (let i = 0; i < 14500; i += 500) {
+            if (i % 2000 !== 0) this.timeout(() => this.bloodFire(), i)
+        }
     }
 
     bloodFire = () => {
         for (let i = 0; i < 3; i++) {
-            this.timeout(() => new AimedBullet(this.enemy.body.position.x, this.enemy.body.position.y, this.player.body.position.x, this.player.body.position.y, 5, 20, 0, this.world, this.bullets), 50 * i)
+            this.timeout(() => {
+                new AimedBullet(this.enemy.body.position.x, this.enemy.body.position.y, this.player.body.position.x, this.player.body.position.y, 5, 20, 0, this.world, this.bullets)
+                this.sfx.blood.bullet.stop()
+                this.sfx.blood.bullet.play()
+            }, 50 * i)
         }
     }
 
@@ -147,6 +180,7 @@ class Scene2 extends Scene {
         let aim = new AimLaser(this.deimos.body.position.x, this.deimos.body.position.y, Math.abs(this.phobos.body.position.x - this.deimos.body.position.x), 5, 0, this.world, this.bullets)
         this.timeout(() => {
             aim.remove()
+            this.sfx.blood.laser.play()
             let laser = new Laser(this.deimos.body.position.x, this.deimos.body.position.y, Math.abs(this.phobos.body.position.x - this.deimos.body.position.x), 5, 0, this.world, this.bullets)
             let sweep = Composite.create()
             Composite.add(sweep, laser.body)
@@ -166,6 +200,7 @@ class Scene2 extends Scene {
         let aim = new AimLaser(this.deimos.body.position.x, this.deimos.body.position.y, 1000, 5, 90 * Math.PI / 180, this.world, this.bullets)
         this.timeout(() => {
             aim.remove()
+            this.sfx.blood.laser.play()
             let laser = new Laser(this.deimos.body.position.x, this.deimos.body.position.y, 1000, 5, 90 * Math.PI / 180, this.world, this.bullets)
             let sweep = Composite.create()
             Composite.add(sweep, laser.body)
@@ -205,6 +240,7 @@ class Scene2 extends Scene {
                     5, 20, targetTime, this.world, this.bullets)
             }, theta / (2 * Math.PI / 40) * 16)
         }
+        this.timeout(() => this.sfx.blood.explosion.play(), targetTime)
     }
 
     waveBarrage = () => {
@@ -233,9 +269,11 @@ class Scene2 extends Scene {
                 counter * 15)
             this.timeouts.push(bulletTimeout)
         }
+        this.timeout(() => this.sfx.blood.shotgun.play(), targetTime)
     }
 
     deploy = (x, y, speed, callback) => {
+        this.sfx.blood.movement.play()
         this.enableOrbit = false
         this.moveBody(this.phobos.body, x + this.phobos.body.position.x - this.enemy.body.position.x, y + this.phobos.body.position.y - this.enemy.body.position.y, speed)
         this.moveBody(this.deimos.body, x + this.deimos.body.position.x - this.enemy.body.position.x, y + this.deimos.body.position.y - this.enemy.body.position.y, speed)
@@ -253,6 +291,11 @@ class Scene2 extends Scene {
             aimDeimos.remove()
             let fearLaser = new Laser(this.phobos.body.position.x, this.phobos.body.position.y, 2000, 5, thetaPhobos, this.world, this.bullets)
             let terrorLaser = new Laser(this.deimos.body.position.x, this.deimos.body.position.y, 2000, 5, thetaDeimos, this.world, this.bullets)
+            this.sfx.blood.laser.play()
+            this.timeout(() => {
+                this.sfx.blood.laser.stop()
+                this.sfx.blood.laser.play()
+            }, 900)
             for (let i = 0; i < 2 * Math.PI / (Math.PI / 180); i++) {
                 this.timeout(() => {
                     fearLaser.rotate(Math.PI / 180)

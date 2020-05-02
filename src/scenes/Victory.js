@@ -1,8 +1,10 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import PlayerSVG from '../assets/svg/PlayerSVG'
 import Viewbox from '../assets/svg/Viewbox'
 import EnemySVG from '../assets/svg/EnemySVG'
-
+import { Howl } from "howler"
+import enemyScream from "../assets/sounds/sfx/enemy_scream.wav"
+import enemyExplosion from "../assets/sounds/sfx/enemy_explosion.wav"
 let shuffle = arr => {
     var i, temp, j, len = arr.length;
     for (i = 0; i < len; i++) {
@@ -14,7 +16,24 @@ let shuffle = arr => {
     return arr;
 }
 
+let scream = new Howl({
+    src: [enemyScream],
+    preload: true,
+    volume: 0.5
+})
+
+let explosion = new Howl({
+    src: [enemyExplosion],
+    preload: true,
+    volume: 0.5
+})
+
 let Victory = props => {
+    useEffect(() => {
+        scream.play()
+        let timeout = setTimeout(() => explosion.play(), 2000)
+        return () => clearTimeout(timeout)
+    }, [props])
     return (
         <Viewbox>
             <text opacity="0" fill="white" fontSize="32" alignmentBaseline="central" textAnchor="middle" fontFamily="Arial Black">

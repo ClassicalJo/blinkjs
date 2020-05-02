@@ -3,6 +3,12 @@ import { Enemy } from '../common/Enemy'
 import { World, Body, Composite, Constraint, Bodies } from 'matter-js'
 import Target from '../common/TargetingSystem';
 import { nulBullet } from "../common/EnemyBullets"
+import { Howl } from "howler"
+import nulBombSound from "../assets/sounds/sfx/nul_bomb.wav"
+import nulVoidSound from "../assets/sounds/sfx/nul_void.wav"
+import nulBulletSound from "../assets/sounds/sfx/nul_bullet.wav"
+import nulMovementSound from "../assets/sounds/sfx/nul_movement.wav"
+import nulFlashSound from "../assets/sounds/sfx/nul_flash.wav"
 
 
 class Scene3 extends Scene {
@@ -18,6 +24,35 @@ class Scene3 extends Scene {
         World.add(this.world, this.nul)
         this.enemies.push(this.enemy)
         this.spin()
+
+        this.sfx.nul = {
+            bullet: new Howl({
+                src: [nulBulletSound],
+                preload: true,
+                volume: 0.5
+            }),
+            bomb: new Howl({
+                src: [nulBombSound],
+                preload: true,
+                volume: 0.5
+            }),
+            void: new Howl({
+                src: [nulVoidSound],
+                preload: true,
+            }),
+            movement: new Howl({
+                src: [nulMovementSound],
+                preload: true,
+                volume: 0.5
+            }),
+            flash: new Howl({
+                src: [nulFlashSound],
+                preload: true,
+                volume: 0.15,
+            })
+        }
+
+
         this.schedule.push(
             () => this.setSpin(0.03),
             () => this.goldenMovement(150, { x: -1, y: 1 }, 4, "vertical", this.next),
@@ -89,6 +124,7 @@ class Scene3 extends Scene {
         )
         this.step = this.scheduleStart()
         this.schedule[this.step.next().value]()
+
     }
 
     intro = () => {
@@ -117,7 +153,10 @@ class Scene3 extends Scene {
     fire = {
         bullets: () => {
             for (let i = 0; i < 3; i++) {
-                this.timeout(() => new nulBullet(this.enemy.body.position.x, this.enemy.body.position.y, this.player.body.position.x, this.player.body.position.y, 5, 20, 0, this.world, this.bullets), 50 * i)
+                this.timeout(() => {
+                    this.sfx.nul.bullet.play()
+                    new nulBullet(this.enemy.body.position.x, this.enemy.body.position.y, this.player.body.position.x, this.player.body.position.y, 5, 20, 0, this.world, this.bullets)
+                }, 50 * i)
             }
             if (this.enemy.stream) this.timeout(() => this.fire.bullets(), 750)
         }
@@ -135,6 +174,7 @@ class Scene3 extends Scene {
     }
     bond = {
         create: () => {
+            this.sfx.nul.void.play()
             this.hook = Bodies.circle(this.enemy.body.position.x, this.enemy.body.position.y, 0, { isStatic: true, isSensor: true })
             this.constraint = Constraint.create({ bodyA: this.hook, bodyB: this.player.body, stiffness: 0.004 })
             this.constraint.length = this.constraint.length / 20
@@ -155,7 +195,6 @@ class Scene3 extends Scene {
         let radius = Math.sqrt(Math.pow(target.x - origin.x, 2) + Math.pow(target.y - origin.y, 2)) / 2
         let theta = Target.getTheta(this.enemy.body.position.x, this.enemy.body.position.y, target.x, target.y)
         let hook = { x: origin.x + radius * Math.cos(theta), y: origin.y + radius * Math.sin(theta) }
-
         for (let i = 0; i < totalAngle / step; i++) {
             this.timeout(() => Composite.rotate(this.nul, step, { x: hook.x, y: hook.y }), i * (16 / speed))
         }
@@ -203,6 +242,7 @@ class Scene3 extends Scene {
         if (orientation === "horizontal") direction.x !== direction.y ? step *= 1 : step *= -1
         if (orientation !== "horizontal") direction.x === direction.y ? step *= -1 : step *= 1
         let squares = this.getSquares(radius)
+        if (this.player.movement) this.sfx.nul.movement.play()
         for (let i = 0; i < 540; i++) {
             this.timeout(() => Composite.rotate(this.nul, step, this.getHook[orientation](origin, direction, squares, i)), i * (16 / speed))
         }
@@ -219,10 +259,11 @@ class Scene3 extends Scene {
     }
 
     nulBomb = callback => {
-        
         let bomb = new nulBullet(this.enemy.body.position.x, this.enemy.body.position.y, this.player.body.position.x, this.player.body.position.y, 10, 10, 0, this.world, this.bullets)
+        this.sfx.nul.bullet.play()
         this.timeout(() => {
             bomb.remove()
+            this.sfx.nul.bomb.play()
             for (let i = 0; i < 9; i++) {
                 new nulBullet(bomb.body.position.x, bomb.body.position.y, bomb.body.position.x + Math.cos(2 * Math.PI / 9 * i), bomb.body.position.y + Math.sin(2 * Math.PI / 9 * i), 5, 10, 0, this.world, this.bullets)
             }
@@ -239,12 +280,16 @@ class Scene3 extends Scene {
             this.teleport = this.timeout(() => {
                 let random = Math.floor(Math.random() * positions.length)
                 Body.setPosition(this.enemy.body, positions[random])
+                this.sfx.nul.flash.stop()
+                this.sfx.nul.flash.play()
                 this.fire.bullets()
                 positions.splice(random, 1)
             }, 250 * i)
         }
         this.timeout(() => {
             Body.setPosition(this.enemy.body, origin)
+            this.sfx.nul.flash.stop()
+            this.sfx.nul.flash.play()
             this.nulBomb()
             this.next()
         }, 1000)

@@ -5,6 +5,8 @@ import PlayerBullet from "../common/PlayerBullet"
 import Frame from '../common/Frame'
 import PlayerSVG from '../assets/svg/PlayerSVG';
 import EnemySVG from '../assets/svg/EnemySVG';
+import HPBar from "../assets/svg/HPBar"
+import BarrierBar from "../assets/svg/BarrierBar"
 import collisionEvents from '../common/CollisionEvents'
 import BulletsSVG from '../assets/svg/BulletsSVG'
 import Background from '../assets/svg/Background'
@@ -12,6 +14,13 @@ import Viewbox from '../assets/svg/Viewbox'
 import { AimedBullet } from '../common/EnemyBullets'
 import Target from "../common/TargetingSystem"
 import Pause from "./Pause"
+import { Howl } from "howler"
+import playerFire from "../assets/sounds/sfx/player_fire.wav"
+import playerBlink from "../assets/sounds/sfx/player_blink.wav"
+import playerHit from "../assets/sounds/sfx/player_hit.wav"
+import gamePause from "../assets/sounds/sfx/game_pause.wav"
+import gameUnpause from "../assets/sounds/sfx/game_unpause.wav"
+import gameText from "../assets/sounds/sfx/game_text.wav"
 
 class Scene extends React.Component {
     constructor(props) {
@@ -21,7 +30,6 @@ class Scene extends React.Component {
             playerBullets: [],
             walls: [],
             bullets: [],
-            bouncers: [],
             timer: 0,
             barriers: [],
             enemies: [],
@@ -45,7 +53,6 @@ class Scene extends React.Component {
         this.enemies = []
         this.barriers = []
         this.bullets = []
-        this.bouncers = []
 
         this.playerBullets = []
         this.playerMovementMap = []
@@ -62,19 +69,51 @@ class Scene extends React.Component {
 
         this.state.player = this.player
 
-
-        Events.on(this.engine, 'beforeUpdate', event => {
+        this.sfx = {
+            player: {
+                fire: new Howl({
+                    src: [playerFire],
+                    preload: true,
+                }),
+                blink: new Howl({
+                    src: [playerBlink],
+                    preload: true,
+                    volume: 0.20,
+                }),
+                hit: new Howl({
+                    src: [playerHit],
+                    preload: true
+                }),
+            },
+            game: {
+                pause: new Howl({
+                    src: [gamePause],
+                    volume: 0.15,
+                    preload: true
+                }),
+                unpause: new Howl({
+                    src: [gameUnpause],
+                    volume: 0.15,
+                    preload: true
+                }),
+                text: new Howl({
+                    src: [gameText],
+                    preload: true,
+                })
+            }
+        }
+        this.events = () => {
             this.world.timer = Number(this.world.timer) + 0.016666
             this.world.timer = Math.round(this.world.timer * 100) / 100
-        })
+        }
+
+        Events.on(this.engine, 'beforeUpdate', this.events)
     }
 
     componentDidMount = () => {
         collisionEvents(this.player, this.engine, this.playerBullets)
-        if (this.props.playMode === "keyboard") {
-            window.addEventListener("keydown", this.handleKeyDown, true)
-            window.addEventListener("keyup", this.handleKeyUp, true)
-        }
+        window.addEventListener("keydown", this.handleKeyDown, true)
+        window.addEventListener("keyup", this.handleKeyUp, true)
         this.intervals.push(this.cycle)
         Runner.run(this.runner, this.engine)
         this.cycle()
@@ -84,17 +123,23 @@ class Scene extends React.Component {
         Runner.stop(this.runner)
         World.clear(this.world)
         Engine.clear(this.engine)
+        this.bullets.forEach(key => key.remove())
+        this.playerBullets.forEach(key => key.remove())
     }
 
     componentWillUnmount = () => {
+        for (let sfxSources in this.sfx) {
+            for (let sound in this.sfx[sfxSources]) {
+                if (sound !== "hit") this.sfx[sfxSources][sound].stop()
+            }
+        }
         this.resetGame()
         cancelAnimationFrame(this.loop)
         this.intervals.forEach((key) => clearInterval(key))
         this.timeouts.forEach((key) => clearTimeout(key))
-        if (this.props.playMode === "keyboard") {
-            window.removeEventListener("keydown", this.handleKeyDown, true)
-            window.removeEventListener("keyup", this.handleKeyUp, true)
-        }
+        Events.off(this.engine, 'beforeUpdate', this.events)
+        window.removeEventListener("keydown", this.handleKeyDown, true)
+        window.removeEventListener("keyup", this.handleKeyUp, true)
     }
 
     cycle = () => {
@@ -113,12 +158,14 @@ class Scene extends React.Component {
 
     togglePause = () => {
         if (this.state.pause) {
+            this.sfx.game.unpause.play()
             this.setState({ pause: false })
             this.cycle()
             Runner.run(this.runner, this.engine)
 
         }
         else {
+            this.sfx.game.pause.play()
             this.setState({ pause: true })
             cancelAnimationFrame(this.loop)
             Runner.stop(this.runner)
@@ -161,8 +208,8 @@ class Scene extends React.Component {
             for (let i = 0; i < this.enemies.length; i++) {
                 if (this.enemies[i].body.hp <= 0) {
                     let victoryData = {
-                        enemy: {...this.enemy},
-                        player: {...this.player},
+                        enemy: { ...this.enemy },
+                        player: { ...this.player },
                     }
                     this.timeout(() => this.props.victory(victoryData), 0)
                     this.enemies[i].remove()
@@ -175,7 +222,6 @@ class Scene extends React.Component {
             let player = Object.assign({}, prevState.player)
             let playerBullets = Object.assign({}, prevState.playerBullets)
             let bullets = Object.assign({}, prevState.bullets)
-            let bouncers = Object.assign({}, prevState.bouncers)
             let barriers = Object.assign({}, prevState.barriers)
             let enemies = Object.assign({}, prevState.enemies)
             let timer = Number(this.world.timer)
@@ -185,14 +231,14 @@ class Scene extends React.Component {
             player = this.player
             playerBullets = this.playerBullets
             bullets = this.bullets
-            bouncers = this.bouncers
             enemies = this.enemies
             barriers = this.barriers
             message = this.message
 
-            return { player, playerBullets, bullets, bouncers, enemies, barriers, timer, message }
+            return { player, playerBullets, bullets, enemies, barriers, timer, message }
         })
         if (this.player.dead === true) {
+            this.sfx.player.hit.play()
             this.timeout(() => {
                 this.props.death(this.state.player)
                 this.props.sceneChange("death")
@@ -247,12 +293,14 @@ class Scene extends React.Component {
             }
             if (Math.abs(finalX) > 950) finalX = 950 * (finalX < 0 ? -1 : 1)
             if (Math.abs(finalY) > 512.5) finalY = 512.5 * (finalY < 0 ? -1 : 1)
+            this.sfx.player.blink.play()
             Body.setPosition(this.player.body, { x: finalX, y: finalY })
         }
     }
 
     shoot = () => {
         if (this.player.bulletOnCooldown !== true && (this.player.movement)) {
+            this.sfx.player.fire.play()
             this.player.bulletOnCooldown = true
             let bullet = new PlayerBullet(this.player.body.position.x, this.player.body.position.y - 50, 5, this.world, this.playerBullets)
             this.playerBullets.push(bullet)
@@ -266,6 +314,10 @@ class Scene extends React.Component {
         this.message = ""
         for (let i = 0; i < array.length; i++) {
             this.timeout(() => {
+                if (string.length > 1) {
+                    this.sfx.game.text.stop()
+                    this.sfx.game.text.play()
+                }
                 this.message = this.message.concat(array[i])
             }, 100 * i)
         }
@@ -332,8 +384,8 @@ class Scene extends React.Component {
                         textAnchor="middle"
                     >{String(this.state.message)}
                     </text>
-                    {this.state.bullets.map((key) => BulletsSVG[key.body.label](key))}
-                    {this.state.playerBullets.map((key) =>
+                    {this.state.bullets.map(key => BulletsSVG[key.body.label](key))}
+                    {this.state.playerBullets.map(key =>
                         <circle
                             key={this.state.playerBullets.indexOf(key)}
                             cx={key.body.position.x}
@@ -342,14 +394,19 @@ class Scene extends React.Component {
                             fill="white">
                         </circle>)}
                     {this.state.enemies.map((key => EnemySVG[key.name](key)))}
-                    {this.state.barriers.map((key) => <circle
-                        className={key.className}
-                        key={this.state.barriers.indexOf(key)}
-                        cx={key.body.position.x}
-                        cy={key.body.position.y}
-                        r={key.radius}
-                        fill="transparent"
-                    />)}
+                    {this.state.barriers.map(key => (
+                        <circle
+                            key={key.body.id}
+                            cx={key.body.position.x}
+                            cy={key.body.position.y}
+                            r={key.radius}
+                            fill="green"
+                            opacity="0.75">
+                            <animate attributeName="fill" values="transparent;red" keyTimes="0;1" dur="0.03s" begin="0s" repeatCount="indefinite" />
+                            {(key.body.hp > key.body.maxHp / 4) && <animate attributeName="fill" values="transparent;yellow" keyTimes="0;1"  dur="0.03s" begin="0s" repeatCount="indefinite" />}
+                            {(key.body.hp > key.body.maxHp / 2) && <animate attributeName="fill" values="transparent;green" keyTimes="0;1" dur="0.03s" begin="0s" repeatCount="indefinite" />}
+                        </circle>
+                    ))}
                     {PlayerSVG(
                         this.state.player.body.position.x - this.state.player.width / 2,
                         this.state.player.body.position.y - this.state.player.height / 2,
@@ -367,6 +424,17 @@ class Scene extends React.Component {
                         setShowIntro={this.props.setShowIntro}
                         sceneChange={this.props.sceneChange}
                         selectEnemy={this.props.selectEnemy}
+                    />}
+
+                    <HPBar
+                        coreColor={this.enemy.coreColor}
+                        hp={this.enemy.body.hp}
+                        maxHp={this.enemy.body.maxHp}
+                        showIntro={this.props.showIntro}
+                    />
+                    {(this.outerBarrier) && <BarrierBar
+                        hp={this.outerBarrier.body.hp}
+                        maxHp={this.outerBarrier.body.maxHp}
                     />}
                 </React.Fragment>
             )

@@ -13,28 +13,8 @@ html, body {
         left: 0;
         max-height: 100vh;
         
-        .disappear {
-            animation: disappear 1.5s;
-            opacity: 0;
-        }
-        
-        .appear {
-            animation: disappear 1.5s reverse;
-            opacity: 1;
-        }
     }
 }
 #zone {
     position: absolute;    
 }
-
-@keyframes disappear {
-    0% {
-        opacity: 1;
-    }
-    100% {
-        opacity: 0;
-    }
-}
-
-  

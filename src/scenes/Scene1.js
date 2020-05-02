@@ -2,7 +2,12 @@ import { Enemy } from '../common/Enemy';
 import SphereBarrier from '../common/SphereBarrier'
 import Scene from '../common/Scene'
 import { Bullet, AimedBullet, BouncerBullet, HomingBullet } from "../common/EnemyBullets"
-import "../assets/css/scene1.css"
+import { Howl } from 'howler';
+import sakuraBullet from "../assets/sounds/sfx/sakura_bullet.wav"
+import sakuraBarrage from "../assets/sounds/sfx/sakura_barrage.wav"
+import sakuraWave from "../assets/sounds/sfx/sakura_wave.wav"
+import sakuraBouncer from "../assets/sounds/sfx/sakura_bouncer.wav"
+import sakuraCascadeFalls from "../assets/sounds/sfx/sakura_cascade_falls.wav"
 
 class Scene1 extends Scene {
     constructor() {
@@ -12,17 +17,40 @@ class Scene1 extends Scene {
         this.enemy.coreColor = "pink"
         this.enemy.className = "sakura"
         this.enemies.push(this.enemy)
-
+    
+        this.sfx.sakura = {
+            bullet: new Howl({
+                src: [sakuraBullet],
+                preload: true,
+                volume: 0.05,
+            }),
+            barrage: new Howl({
+                src: [sakuraBarrage],
+                preload: true,
+                volume: 0.25,
+            }),
+            bouncer: new Howl({
+                src: [sakuraBouncer],
+                preload: true,
+                volume: 0.5,
+            }),
+            wave: new Howl({
+                src: [sakuraWave],
+                preload: true,
+                volume: 0.25,
+            }),
+            cascade: new Howl({
+                src: [sakuraCascadeFalls],
+                preload: true,
+                volume: 0.5,
+            }),
+        }
         this.schedule.push(
             () => this.intro(),
             () => this.firstBarrage(),
             () => this.secondBarrage(),
             () => this.thirdBarrage(),
             () => this.fourthBarrage(),
-            () => {
-                this.outerBarrier.className = ""
-                this.next()
-            },
             () => this.timeout(() => this.theEnd(), 5000),
         )
         this.step = this.scheduleStart()
@@ -52,14 +80,27 @@ class Scene1 extends Scene {
 
     firstBarrage = () => {
         this.wave(-1000, 0, 1)
-        this.timeout(() => this.wave(1000, 0, -1), 3000)
-        this.timeout(() => this.wave(-1000, -200, 1), 6000)
-        this.timeout(() => this.wave(1000, -200, -1), 9000)
+        this.sfx.sakura.barrage.play()
+        this.timeout(() => {
+            this.wave(1000, 0, -1)
+            this.sfx.sakura.barrage.stop()
+            this.sfx.sakura.barrage.play()
+        }, 3000)
+        this.timeout(() => {
+            this.wave(-1000, -200, 1)
+            this.sfx.sakura.barrage.stop()
+            this.sfx.sakura.barrage.play()
+        }, 6000)
+        this.timeout(() => {
+            this.wave(1000, -200, -1)
+            this.sfx.sakura.barrage.stop()
+            this.sfx.sakura.barrage.play()
+        }, 9000)
         this.timeout(() => this.next(), 14000)
     }
 
     wave = (originX, originY, waveDirection) => {
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < 75; i++) {
             this.timeout(() => {
                 new Bullet(originX + i * 25 * waveDirection, originY + i * Math.sin(i * Math.PI / 4 * -1 + 0.5), 5, 15, 1000, this.world, this.bullets)
             }, 25 * i)
@@ -85,6 +126,7 @@ class Scene1 extends Scene {
             counter++
             this.timeout(() => {
                 new AimedBullet(r * Math.cos(theta) + originX, -r * Math.sin(theta) + originY, originX, originY, 5, 20, targetTime - 10 * asyncCounter, this.world, this.bullets)
+                this.sfx.sakura.bullet.play()
             }, 10 * counter)
         }
     }
@@ -101,8 +143,9 @@ class Scene1 extends Scene {
     bouncerCluster = (originX, originY) => {
         for (let i = 0; i < 4; i++) {
             this.timeout(() => {
-                let bouncer = new BouncerBullet(originX, originY, this.player.body.position.x, this.player.body.position.y, 50, 35, 100, this.world, this.bullets)
-                bouncer.className = "bouncer"
+                new BouncerBullet(originX, originY, this.player.body.position.x, this.player.body.position.y, 50, 35, 100, this.world, this.bullets)
+                this.sfx.sakura.bouncer.stop()
+                this.sfx.sakura.bouncer.play()
             }, i * 500)
         }
     }
@@ -118,6 +161,8 @@ class Scene1 extends Scene {
         let bullet = new HomingBullet(originX, originY, this.player.body.position, 40, 20, delay, this.world, this.bullets)
         bullet.body.label = "bigBullet"
         bullet.className = "bouncer"
+        this.sfx.sakura.wave.play()
+        this.timeout(() => this.sfx.sakura.cascade.play(), delay)
         for (let i = 1; i <= 5; i++) {
             this.timeout(() => {
                 let bullet = new HomingBullet(originX + 150 * i, originY - 50 * i, this.player.body.position, 40, 20, delay - 25 * i, this.world, this.bullets)

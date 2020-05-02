@@ -8,9 +8,18 @@ import Scene3 from './scenes/Scene3'
 import Scene4 from "./scenes/Scene4"
 import Scene5 from "./scenes/Scene5"
 import Victory from "./scenes/Victory"
+import Credits from "./scenes/Credits"
 import "./assets/css/app.css"
 import Death from './scenes/Death';
 import { withCookies } from "react-cookie"
+import { Howl } from "howler"
+import spaceConcept from "./assets/sounds/music/space_concept.mp3"
+import gwdihw from "./assets/sounds/music/gwdihw.mp3"
+import colossalSketchBlood from "./assets/sounds/music/colossal_sketch_blood.mp3"
+import colossalSketchAva from "./assets/sounds/music/colossal_sketch_ava.mp3"
+import sleighBells from "./assets/sounds/music/sleighbells.mp3"
+import thrillerHorrorSomething from "./assets/sounds/music/thrillerhorrorsomething.mp3"
+import rodeOverTheDeep from "./assets/sounds/music/rode_over_the_deep.mp3"
 
 
 class App extends React.Component {
@@ -25,6 +34,7 @@ class App extends React.Component {
       currentScene: "start",
       enemySelected: "none",
       playMode: "keyboard",
+      mute: false,
       svgHeight: svgHeight,
       svgWidth: svgWidth,
       innerWidth: window.innerWidth,
@@ -43,17 +53,71 @@ class App extends React.Component {
       }
     }
 
+    this.bgm = {
+      start: new Howl({
+        src: [spaceConcept],
+        preload: true,
+        volume: 0.5,
+        loop: true,
+      }),
+      none: new Howl({
+        src: [spaceConcept],
+        preload: true,
+        volume: 0.5,
+        loop: true,
+      }),
+      scene1: new Howl({
+        src: [gwdihw],
+        preload: true,
+        volume: 0.25,
+        loop: true
+      }),
+      scene2: new Howl({
+        src: [colossalSketchBlood],
+        preload: true,
+        volume: 0.5,
+        loop: true
+      }),
+      scene3: new Howl({
+        src: [thrillerHorrorSomething],
+        preload: true,
+        volume: 0.25,
+        loop: true
+      }),
+      scene4: new Howl({
+        src: [sleighBells],
+        preload: true,
+        volume: 0.25,
+        loop: true
+      }),
+      scene5: new Howl({
+        src: [colossalSketchAva],
+        preload: true,
+        volume: 0.25,
+        loop: true
+      }),
+      credits: new Howl({
+        src: [rodeOverTheDeep],
+        preload: true,
+        volume: 0.5,
+      })
+    }
 
-  }
-
-  componentDidMount = () => {
-    window.addEventListener("resize", this.resize)
   }
 
   componentWillUnmount = () => {
     window.removeEventListener("resize", this.resize)
   }
 
+  componentDidMount = () => {
+    this.bgm.start.play()
+  }
+
+  stopAllMusic = () => {
+    for (let music in this.bgm) {
+      this.bgm[music].stop()
+    }
+  }
 
   resize = () => {
     let svgHeight = window.innerHeight > window.innerWidth * 9 / 16 ? window.innerWidth * 9 / 16 : window.innerHeight
@@ -68,14 +132,33 @@ class App extends React.Component {
   }
 
   selectEnemy = string => {
+    this.stopAllMusic()
+    this.bgm[string].play()
     this.setState({
       enemySelected: string,
       currentScene: string
     })
   }
 
+  toggleMute = () => {
+    this.setState(prevState => ({
+      mute: !prevState.mute
+    }))
+
+    for (let music in this.bgm) {
+      this.bgm[music].stop()
+      this.bgm[music]._muted = !this.bgm[music]._muted
+    }
+    this.bgm.start.play()
+  }
+
+
 
   sceneChange = string => {
+    if (string === 'credits') {
+      this.stopAllMusic()
+      this.bgm.credits.play()
+    }
     this.setState({
       currentScene: string
     })
@@ -90,7 +173,7 @@ class App extends React.Component {
   victory = (victoryData) => {
     let currentDate = new Date()
     this.cookies.set(victoryData.enemy.name, "vencido", { expires: new Date(currentDate.getFullYear() + 1, currentDate.getMonth(), currentDate.getDate(), 0, 0, 0, 0), path: '/' })
-
+    this.stopAllMusic()
     this.setState({
       [victoryData.enemy.name]: false,
       enemySelected: "none",
@@ -112,11 +195,8 @@ class App extends React.Component {
   }
 
   eraseCookies = () => {
-    this.cookies.remove("sakura")
-    this.cookies.remove("blood")
-    this.cookies.remove("nul")
-    this.cookies.remove("vida")
-    this.cookies.remove("ava")
+    ["sakura", "blood", "nul", "vida", "ava"].forEach(key => this.cookies.remove(key))
+
     this.setState({
       sakura: true,
       blood: true,
@@ -147,11 +227,14 @@ class App extends React.Component {
           <Start
             sceneChange={this.sceneChange}
             erase={this.eraseCookies}
+            toggleMute={this.toggleMute}
+            mute={this.state.mute}
           />}
         {this.state.currentScene === "controller" &&
           <Controller
             sceneChange={this.sceneChange}
           />}
+        {this.state.currentScene === "credits" && <Credits sceneChange={this.sceneChange} />}
         {this.state.currentScene === "select" &&
           <Select
             blood={this.state.blood}
@@ -161,6 +244,7 @@ class App extends React.Component {
             selectEnemy={this.selectEnemy}
             enemySelected={this.state.enemySelected}
             sceneChange={this.sceneChange}
+            bgm={this.bgm}
           />}
         {this.state.currentScene === "death" &&
           <Death

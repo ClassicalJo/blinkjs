@@ -16,12 +16,14 @@ let PlayerSVG = (x, y, w, h) => {
             <path d={rightWing} fill="white" />
             <rect
                 id="player"
-                className="playerGlow"
+                fill="pink"
                 x={x}
                 y={y}
                 width={w}
                 height={h}
-            />
+            >
+                <animate attributeName="fill" values="pink;white;pink" keyTimes="0;0.5;1"  keySplines="0.42 0 0.58 1;0.42 0 0.58 1"  dur="2s" begin="0s" repeatCount="indefinite" />
+            </rect>
         </g>
     )
 }

@@ -3,6 +3,42 @@ import React from 'react'
 let Definitions = () => {
     return (
         <defs>
+            <mask id="hpMask">
+                <rect
+                    height="1000"
+                    width="50"
+                    fill="black"
+                    x="925"
+                    y="-500"
+                />
+                <rect
+                    height="1000"
+                    width="50"
+                    fill="white"
+                    x="925"
+                    y="-500"
+                    rx="20"
+                />
+            </mask>
+
+            <mask id="barrierMask">
+                <rect
+                    height="1020"
+                    width="60"
+                    fill="black"
+                    x="920"
+                    y="-510"
+                />
+                <rect
+                    height="1020"
+                    width="60"
+                    fill="white"
+                    x="920"
+                    y="-510"
+                    rx="30"
+                />
+            </mask>
+
             <filter id="blur">
                 <feGaussianBlur stdDeviation="2" />
             </filter>
@@ -17,7 +53,7 @@ let Definitions = () => {
             </radialGradient>
 
             <filter id="glowing" height="500%" width="500%" x="-250%" y="-250%">
-            <feDropShadow
+                <feDropShadow
                     floodColor="silver"
                     floodOpacity="0.9"
                     stdDeviation="5"
@@ -30,11 +66,11 @@ let Definitions = () => {
                     dy="0"
                     dx="0"
                 />
-    
+
             </filter>
 
 
-            {["violet", "indigo", "blue", "green", "yellow", "orange", "red","white"].map(key => {
+            {["violet", "indigo", "blue", "green", "yellow", "orange", "red", "white"].map(key => {
                 return (
                     <radialGradient
                         key={key}

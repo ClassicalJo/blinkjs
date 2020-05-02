@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react'
 import ViewBox from "../assets/svg/Viewbox"
+import playerExplosion from "../assets/sounds/sfx/player_explosion.wav"
+import { Howl } from "howler"
 
 let handleKeyDown = (e, props) => {
     if (e.key === "r" || e.key === "R") {
@@ -8,10 +10,24 @@ let handleKeyDown = (e, props) => {
     }
 }
 
+let sfx = {
+    player: {
+        explosion: new Howl({
+            src: [playerExplosion],
+            preload: true
+        })
+    }
+}
+
 let Death = props => {
     useEffect(() => {
         window.addEventListener("keydown", (e) => handleKeyDown(e, props))
-        return () => window.removeEventListener("keydown", (e) => handleKeyDown(e, props))
+        let timeout = setTimeout(() => sfx.player.explosion.play(), 1000)
+        return () => {
+            clearTimeout(timeout)
+            sfx.player.explosion.stop()
+            window.removeEventListener("keydown", (e) => handleKeyDown(e, props))
+        }
     })
     return (
         <ViewBox>

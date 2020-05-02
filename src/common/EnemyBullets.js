@@ -6,12 +6,10 @@ window.decomp = decomp
 let reference = Bodies.rectangle(0, 0, 100, 10, {})
 
 export class Projectile {
-    constructor(world) {
+    constructor(world, container) {
         let intervals = []
-        this.isOffScreen = (x, y) => { return (x > 1250 || x < -1250 || y > 812.5 || y < -812.5) }
         this.timeout = (callback, delay) => {
             let timeStamp = Number(world.timer)
-
             let intervalName = setInterval(() => {
                 if (Math.abs(timeStamp - world.timer) * 1000 >= delay) {
                     callback()
@@ -20,37 +18,34 @@ export class Projectile {
             }, 10)
             intervals.push(intervalName)
         }
+        this.isOffScreen = (x, y) => { return (x > 1250 || x < -1250 || y > 812.5 || y < -812.5) }
+        this.remove = () => {
+            World.remove(world, this.body)
+            intervals.forEach(key => clearInterval(key))
+            for (let i = container.length - 1; i >= 0; i--) if (container[i].body.id === this.body.id) container.splice(i, 1)
+        }
     }
 
 }
 export class Bullet extends Projectile {
     constructor(x, y, r, speed, delay, world, container) {
-        super(world);
-        let options = {
-            isSensor: true,
-            label: "bullet"
-        }
-        this.body = Bodies.circle(x, y, r, options)
-
+        super(world, container);
+        this.body = Bodies.circle(x, y, r, { isSensor: true, label: "bullet" })
         this.timeout(() => Body.setVelocity(this.body, { x: 0, y: speed }), delay)
-        this.timeout(() => this.remove(), 5000)
-
-        let checkIfIsOffScreen = setInterval(() => this.isOffScreen(this.body.position.x, this.body.position.y) ? this.remove() : null, 16)
+        this.timeout(() => this.remove(), 2500)
+        this.checkOffscreen = () => {
+            if (this.isOffScreen(this.body.position.x, this.body.position.y)) this.remove()
+            else this.timeout(this.checkOffscreen, 100)
+        }
 
         World.add(world, this.body)
         container.push(this)
-
-        this.remove = () => {
-            clearInterval(checkIfIsOffScreen)
-            World.remove(world, this.body)
-            for (let i = container.length - 1; i >= 0; i--) if (container[i].body.id === this.body.id) container.splice(i, 1)
-        }
     }
 }
 
 export class BouncerBullet extends Projectile {
     constructor(x, y, targetX, targetY, r, speed, delay, world, container) {
-        super(world);
+        super(world, container);
         this.options = {
             restitution: 1,
             label: "bouncer",
@@ -63,17 +58,12 @@ export class BouncerBullet extends Projectile {
 
         this.timeout(() => Body.setVelocity(this.body, target), delay)
         this.timeout(() => this.remove(), 5000)
-
-        this.remove = () => {
-            World.remove(world, this.body)
-            for (let i = container.length - 1; i >= 0; i--) if (container[i].body.id === this.body.id) container.splice(i, 1)
-        }
     }
 }
 
 export class AimedBullet extends Projectile {
     constructor(x, y, targetX, targetY, r, speed, delay, world, container) {
-        super(world)
+        super(world, container)
         this.body = Bodies.circle(x, y, r, { isSensor: true, label: "bullet" })
 
         let target = Target.getTargetVelocity(x, y, targetX, targetY, speed)
@@ -82,18 +72,12 @@ export class AimedBullet extends Projectile {
 
         this.timeout(() => Body.setVelocity(this.body, target), delay)
         this.timeout(() => this.remove(), 4000)
-
-        this.remove = () => {
-
-            World.remove(world, this.body)
-            for (let i = container.length - 1; i >= 0; i--) if (container[i].body.id === this.body.id) container.splice(i, 1)
-        }
     }
 }
 
 export class HomingBullet extends Projectile {
     constructor(x, y, playerPosition, r, bulletSpeed, delay, world, container) {
-        super(world);
+        super(world, container);
 
         this.body = Bodies.circle(x, y, r, { isSensor: true, label: "bullet" })
         this.redirect = false
@@ -112,14 +96,7 @@ export class HomingBullet extends Projectile {
         this.timeout(() => this.redirect = false, delay + 750)
         this.timeout(() => this.remove(), 4000)
 
-        let checkIfIsOffScreen = setInterval(() => this.isOffScreen(this.body.position.x, this.body.position.y) ? this.remove() : null, 16)
-        intervals.push(redirection, checkIfIsOffScreen)
-
-        this.remove = () => {
-            intervals.forEach(key => clearInterval(key))
-            World.remove(world, this.body)
-            for (let i = 0; i < container.length; i++) if (container[i].body.id === this.body.id) container.splice(i, 1)
-        }
+        intervals.push(redirection)
     }
 }
 
@@ -164,7 +141,7 @@ export class nulBullet extends AimedBullet {
 
 export class vidaBullet extends Projectile {
     constructor(x, y, targetX, targetY, r, speed, delay, world, container) {
-        super(world)
+        super(world, container)
         this.body = Bodies.circle(x, y, r, { label: "vida", isSensor: "true" })
 
         let velocity = Target.getTargetVelocity(x, y, targetX, targetY, speed)
@@ -195,7 +172,7 @@ export class vidaBullet extends Projectile {
 
 export class vidaLaser extends Projectile {
     constructor(x, y, w, h, target, speed, delay, world, container) {
-        super(world)
+        super(world, container)
         this.body = Bodies.rectangle(x, y, w, h, { isSensor: true, label: "lifeLaser", frictionAir: 0 })
         this.height = h
         this.width = w
@@ -217,7 +194,7 @@ export class vidaLaser extends Projectile {
 
 export class vidaWave extends Projectile {
     constructor(x, y, w, h, target, speed, delay, world, container) {
-        super(world)
+        super(world, container)
         let bot = [{ x: 0, y: -h }, { x: w, y: h }, { x: w / 2, y: h }]
         let top = [{ x: 0, y: h }, { x: w, y: -h }, { x: w / 2, y: -h }]
         let center = Vertices.centre(Vertices.create(bot, reference))
@@ -236,19 +213,13 @@ export class vidaWave extends Projectile {
         World.add(world, this.body)
         container.push(this)
 
-
         this.timeout(() => this.remove(), 3000)
-
-        this.remove = () => {
-            World.remove(world, this.body)
-            for (let i in container) if (container[i].body.id === this.body.id) container.splice(i, 1)
-        }
     }
 }
 
 export class delayedHoming extends Projectile {
     constructor(origin, target, homing, delayHoming, speed, world, container) {
-        super(world)
+        super(world, container)
         this.body = Bodies.circle(origin.x, origin.y, 10, { isSensor: true, label: "delayedHoming" })
 
         let maxVelocityChange = 1
@@ -269,10 +240,7 @@ export class delayedHoming extends Projectile {
             this.timeout(this.redirect, 16)
         }
         this.timeout(() => this.remove(), 5000)
-        this.remove = () => {
-            World.remove(world, this.body)
-            for (let i in container) if (container[i].body.id === this.body.id) container.splice(i, 1)
-        }
+
         World.add(world, this.body)
         container.push(this)
         this.timeout(this.redirect, delayHoming)
@@ -286,7 +254,7 @@ export class avaBullet extends AimedBullet {
         super(x, y, targetX, targetY, r, speed, delay, world, container)
         this.color = color
         this.body.label = "ava"
-        
+
     }
 }
 
@@ -300,15 +268,10 @@ export class avaHoming extends delayedHoming {
 
 export class Pointer extends Projectile {
     constructor(origin, radius, world, container) {
-        super(world)
+        super(world, container)
         this.body = Bodies.circle(origin.x, origin.y, radius, { isSensor: true, label: "pointer" })
         World.add(world, this.body)
         container.push(this)
-
-        this.remove = () => {
-            World.remove(world, this.body)
-            for (let i = container.length - 1; i >= 0; i--) if (container[i].body.id === this.body.id) container.splice(i, 1)
-        }
     }
 }
 
@@ -321,7 +284,7 @@ export class avaPointer extends Pointer {
 
 export class avaRailgun extends Projectile {
     constructor(origin, target, radius, speed, delay, world, container) {
-        super(world)
+        super(world, container)
         this.body = Bodies.circle(origin.x, origin.y, radius, { isSensor: true, label: "avaRailgun" })
 
         World.add(world, this.body)
@@ -331,10 +294,7 @@ export class avaRailgun extends Projectile {
         }, delay)
 
         this.timeout(() => this.remove(), 3000)
-        this.remove = () => {
-            World.remove(world, this.body)
-            for (let i = container.length - 1; i >= 0; i--) if (container[i].body.id === this.body.id) container.splice(i, 1)
-        }
+
     }
 }
 

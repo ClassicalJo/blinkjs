@@ -10,7 +10,10 @@ let BulletsSVG = {
                     cy={key.body.position.y}
                     r={key.body.circleRadius}
                     fill="#FFFF26"
-                    filter="url(#blur)" />
+                    filter="url(#blur)">
+                        <animate attributeName="fill" from="#FFFF26" to="pink" dur="0.03s" begin="0s" repeatCount="indefinite" fill="freeze"/>
+
+                </circle>
                 <circle
                     cx={key.body.position.x}
                     cy={key.body.position.y}
@@ -55,7 +58,9 @@ let BulletsSVG = {
                     r={key.body.circleRadius}
                     stroke="#C24CF6"
                     fill="black"
-                    strokeWidth="5" />
+                    strokeWidth="5">
+                        <animate attributeName="fill" from="#FFFF26" to="#C24CF6" dur="0.05s" begin="0s" repeatCount="indefinite" fill="freeze"/>
+                    </circle>
             </g>
         )
     },
@@ -236,10 +241,10 @@ let BulletsSVG = {
                 fill={`url(#radial${key.color})`}
             >
                 <animate id={`fade${key.body.id}`} attributeName="opacity" from="1" to="0.25" dur="0.25s" begin="indefinite" fill="freeze" />
-                <animateTransform id={`translate${key.body.id}`} attributeName="transform" type="translate" additive="sum" from="0 0" to={`${0.9 * key.body.position.x} ${0.9 * key.body.position.y}`} dur="0.25s" begin="indefinite" fill="freeze"/>
+                <animateTransform id={`translate${key.body.id}`} attributeName="transform" type="translate" additive="sum" from="0 0" to={`${0.9 * key.body.position.x} ${0.9 * key.body.position.y}`} dur="0.25s" begin="indefinite" fill="freeze" />
                 <animateTransform id={`diminish${key.body.id}`} attributeName="transform" additive="sum" type="scale" from="1 1" to="0.1 0.1" dur="0.25s" begin="indefinite" fill="freeze" />
-                
-                
+
+
             </circle>
         )
     },
@@ -254,35 +259,35 @@ let BulletsSVG = {
     ),
     avaAim: key => {
         return (
-                <rect
-                    key={key.body.id}
-                    x={key.body.position.x + key.width / -2}
-                    y={key.body.position.y + key.height / -2}
-                    height={key.height}
-                    width={key.width}
-                    fill="white"
-                    opacity="0.3"
-                    transform={`rotate(${key.body.angle * 180 / Math.PI} ${key.body.position.x} ${key.body.position.y})`} />
+            <rect
+                key={key.body.id}
+                x={key.body.position.x + key.width / -2}
+                y={key.body.position.y + key.height / -2}
+                height={key.height}
+                width={key.width}
+                fill="white"
+                opacity="0.3"
+                transform={`rotate(${key.body.angle * 180 / Math.PI} ${key.body.position.x} ${key.body.position.y})`} />
         )
     },
     avaCannon: key => {
-                    let v = key.body.vertices
+        let v = key.body.vertices
         let height = Math.sqrt(Math.pow(v[2].x - v[1].x, 2) + Math.pow(v[2].y - v[1].y, 2))
         let width = Math.sqrt(Math.pow(v[1].x - v[0].x, 2) + Math.pow(v[1].y - v[0].y, 2))
 
         return (
-                <rect
-                    key={key.body.id}
-                    x={key.body.position.x + width / -2}
-                    y={key.body.position.y + height / -2}
-                    width={width}
-                    height={height}
-                    rx={height}
-                    transform={`rotate(${key.body.angle * 180 / Math.PI} ${key.body.position.x} ${key.body.position.y})`}
-                    fill="white"
-                    opacity="0.9">
-                    <animate id={`fade${key.body.id}`} attributeName="opacity" from="0.9" to="0" dur="0.5s" begin="indefinite" fill="freeze" />
-                </rect>
+            <rect
+                key={key.body.id}
+                x={key.body.position.x + width / -2}
+                y={key.body.position.y + height / -2}
+                width={width}
+                height={height}
+                rx={height}
+                transform={`rotate(${key.body.angle * 180 / Math.PI} ${key.body.position.x} ${key.body.position.y})`}
+                fill="white"
+                opacity="0.9">
+                <animate id={`fade${key.body.id}`} attributeName="opacity" from="0.9" to="0" dur="0.5s" begin="indefinite" fill="freeze" />
+            </rect>
 
         )
     }
