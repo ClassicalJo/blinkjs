@@ -11,7 +11,6 @@ class Scene3 extends Scene {
         this.enemy = new Enemy(0, -350, 50, 225, this.world)
         this.enemy.name = "nul"
         this.enemy.coreColor = "indigo"
-        this.enemy.className = "appear"
 
         World.add(this.world, this.enemy.body)
         this.enemies.push(this.enemy)

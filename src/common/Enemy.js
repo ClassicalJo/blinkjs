@@ -1,29 +1,23 @@
 import { Bodies, World } from 'matter-js'
 
 export class Enemy {
-    constructor(x, y, r, hp, world) {
-        let options = {
-            isSensor: true,
-        }
-        this.coreColor = "lightpink"
-        this.body = Bodies.circle(x, y, r, options)
+    constructor(x, y, r, hp, world, container) {
+        this.body = Bodies.circle(x, y, r, { isSensor: true, label: "enemy" })
         this.body.hp = hp
         this.body.maxHp = hp
-
-        this.body.label = "enemy"
+        this.coreColor = "lightpink"
         this.dead = false
-
         World.add(world, this.body)
-
+        container.push(this)
         this.remove = () => {
-            if (this.wait) clearTimeout(this.wait)
             World.remove(world, this.body)
+            for (let i = container.length - 1; i >= 0; i--) if (container[i].body.id === this.body.id) container.splice(i, 1)
         }
     }
 }
 
 export class Satellite {
-    constructor(x, y, r, world) {
+    constructor(x, y, r, world, container) {
         let options = {
             isSensor: true,
         }
@@ -32,10 +26,10 @@ export class Satellite {
         this.body.label = "wall"
 
         World.add(world, this.body)
-
+        container.push(this)
         this.remove = () => {
-            if (this.wait) clearTimeout(this.wait)
             World.remove(world, this.body)
+            for (let i = container.length - 1; i >= 0; i--) if (container[i].body.id === this.body.id) container.splice(i, 1)
         }
     }
 }

@@ -1,29 +1,24 @@
-import Scene from '../common/Scene';
+import Scene, { mapStateToProps, mapDispatchToProps } from "../common/Scene"
 import { Enemy, Clone } from '../common/Enemy'
 import { Body, Composite } from 'matter-js'
 import Target from "../common/TargetingSystem"
 import { vidaBullet, vidaLaser, vidaWave } from "../common/EnemyBullets"
-import { Howl } from "howler"
-import vidaLaserSound from "../assets/sounds/sfx/vida_laser.wav"
-import vidaExplosionSound from "../assets/sounds/sfx/vida_explosion.wav"
-import vidaWaveSound from "../assets/sounds/sfx/vida_wave.wav"
-import vidaDivideSound from "../assets/sounds/sfx/vida_divide.wav"
+import { connect } from 'react-redux'
+import { withCookies } from "react-cookie"
 
 class Scene4 extends Scene {
     constructor(props) {
         super(props)
-        this.enemy = new Enemy(0, -350, 10, 250, this.world)
+        this.enemy = new Enemy(0, -350, 10, 250, this.world, this.enemies)
         this.enemy.name = "vida"
         this.enemy.coreColor = "#76C34E"
-        this.enemy.className = "vida"
         this.enemy.spin = 0
         this.clones = []
-
-        this.enemies.push(this.enemy)
+        
         this.spots = [{ x: 0, y: -350 }, { x: 850, y: 0 }, { x: 0, y: 350 }, { x: -850, y: 0 }]
         this.spin()
         this.schedule.push(
-
+            () => this.setBackgroundMusic("vida"),
             () => this.setRadius(this.enemy.body, 50, 10, this.next),
             () => this.intro(),
             () => this.timeout(this.next, 1000),
@@ -35,7 +30,7 @@ class Scene4 extends Scene {
             () => this.fire.nuke(this.enemy.body.position, this.player.body.position, this.timeout(this.next, 250)),
             () => this.fire.nuke(this.enemy.body.position, this.player.body.position, this.next),
             () => this.timeout(this.next, 2000),
-            () => this.fire.wave(100, 200, this.enemy.body.position, this.player.body.position, 30, 1500, this.next),
+            () => this.fire.wave(this.enemy.body.position, 200, this.player.body.position, 30, 1500, this.next),
             () => this.timeout(this.next, 4000),
             () => this.setRadius(this.enemy.body, 37.5, 1, this.next),
             () => this.firstMovement(),
@@ -85,36 +80,13 @@ class Scene4 extends Scene {
             () => this.timeout(this.next, 3000),
             () => this.setSpin(0),
             () => {
+                this.theEnd({...this.enemy.body.position})
                 this.enemy.remove()
-                this.enemies.forEach(key => key.name === "vida" ? this.enemies.splice(key, 1) : null)
-                this.theEnd()
             },
 
         )
         this.step = this.scheduleStart()
-        this.schedule[this.step.next().value]()
-
-        this.sfx.vida = {
-            laser: new Howl({
-                src: [vidaLaserSound],
-                preload: true,
-                volume: 0.15,
-            }),
-            wave: new Howl({
-                src: [vidaWaveSound],
-                preload: true,
-                volume: 0.15,
-            }),
-            explosion: new Howl({
-                src: [vidaExplosionSound],
-                preload: true,
-                volume: 0.5,
-            }),
-            divide: new Howl({
-                src: [vidaDivideSound],
-                preload: true
-            }),
-        }
+        this.checkPreload(() => this.schedule[this.step.next().value]())
     }
 
     setRadius = (body, value, speed, callback) => {
@@ -151,7 +123,6 @@ class Scene4 extends Scene {
             let clone = new Clone(x + 0.01, y + 0.01, this.enemy.body.circleRadius, this.enemy, this.world)
             clone.name = "vida"
             clone.coreColor = "#76C34E"
-            clone.className = "vida"
             this.clones.push(clone)
             this.enemies.push(clone)
             if (callback) callback()
@@ -166,7 +137,7 @@ class Scene4 extends Scene {
 
     firstMovement = () => {
         this.clone.create(this.enemy.body.position.x, this.enemy.body.position.y)
-        this.sfx.vida.divide.play()
+        this.props.sfx.vida.divide.play()
         this.moveBody(this.enemy.body, -500, -300, 4, this.next)
         this.moveBody(this.clones[0].body, 500, -300, 4)
     }
@@ -174,7 +145,7 @@ class Scene4 extends Scene {
     secondMovement = () => {
         this.clone.create(this.enemy.body.position.x, this.enemy.body.position.y)
         this.clone.create(this.clones[0].body.position.x, this.clones[0].body.position.y)
-        this.sfx.vida.divide.play()
+        this.props.sfx.vida.divide.play()
         this.moveBody(this.enemy.body, -650, -275, 4)
         this.moveBody(this.clones[0].body, 650, -275, 4)
         this.moveBody(this.clones[1].body, -350, -350, 4)
@@ -205,7 +176,7 @@ class Scene4 extends Scene {
         this.multiFire.laser([this.enemy, this.clones].flat())
         this.timeout(() => this.multiFire.laser([this.enemy, this.clones].flat()), 1000)
         this.moveBody(this.clones[2].body, 850, 0, 8, () => [this.clones[1], this.clones[2]].forEach(key => this.clone.destroy(key)))
-        this.sfx.vida.divide.play()
+        this.props.sfx.vida.divide.play()
     }
 
     fifthMovement = () => {
@@ -254,36 +225,36 @@ class Scene4 extends Scene {
 
     fire = {
         nuke: (origin, target, callback) => {
-            new vidaBullet(origin.x, origin.y, target.x, target.y, 20, 10, 0, this.world, this.bullets)
-            this.sfx.vida.explosion.stop()
-            this.sfx.vida.explosion.play()
+            new vidaBullet(origin, target, 20, 10, 0, this.world, this.bullets)
+            this.props.sfx.vida.explosion.stop()
+            this.props.sfx.vida.explosion.play()
             if (callback) callback()
         },
         laser: (shots, origin, target, speed, callback) => {
             for (let i = 0; i < shots; i++) {
                 this.timeout(() => {
-                    new vidaLaser(origin.x, origin.y, 50, 5, target, speed, 0, this.world, this.bullets)
-                    this.sfx.vida.laser.stop()
-                    this.sfx.vida.laser.play()
+                    new vidaLaser(origin, 50, target, speed, 0, this.world, this.bullets)
+                    this.props.sfx.vida.laser.stop()
+                    this.props.sfx.vida.laser.play()
                 }, 200 * i)
             }
-            if (callback) this.timeout(() => callback(), 800)
+            if (callback) this.timeout(() => callback(), shots * 200)
         },
-        wave: (w, h, origin, target, speed, delay, callback) => {
-            new vidaWave(origin.x, origin.y, w, h, target, speed, delay, this.world, this.bullets)
-            this.sfx.vida.laser.stop()
-            this.sfx.vida.wave.play()
+        wave: (origin, r, target, speed, delay, callback) => {
+            new vidaWave(origin, r, target, speed, delay, this.world, this.bullets)
+            this.props.sfx.vida.laser.stop()
+            this.props.sfx.vida.wave.play()
             if (callback) callback()
         }
     }
 
     multiFire = {
-        laser: (origins) => {
+        laser: origins => {
             origins.forEach(key => this.fire.laser(6 - origins.length, key.body.position, this.player.body.position, 30))
         },
-        wave: (origins) => {
-            origins.forEach(key => this.fire.wave(100 / origins.length, 200 / origins.length, key.body.position, this.player.body.position, 30, 1000))
+        wave: origins => {
+            origins.forEach(key => this.fire.wave(key.body.position, 200 / origins.length, this.player.body.position, 30, 1000))
         }
     }
 }
-export default Scene4
+export default withCookies(connect(mapStateToProps, mapDispatchToProps)(Scene4))

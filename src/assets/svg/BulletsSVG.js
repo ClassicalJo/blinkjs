@@ -5,13 +5,12 @@ let BulletsSVG = {
         return (
             <g key={key.body.id}>
                 <circle
-                    className={key.className}
                     cx={key.body.position.x}
                     cy={key.body.position.y}
                     r={key.body.circleRadius}
                     fill="#FFFF26"
                     filter="url(#blur)">
-                        <animate attributeName="fill" from="#FFFF26" to="pink" dur="0.03s" begin="0s" repeatCount="indefinite" fill="freeze"/>
+                    <animate attributeName="fill" from="#FFFF26" to="pink" dur="0.03s" begin="0s" repeatCount="indefinite" fill="freeze" />
 
                 </circle>
                 <circle
@@ -25,7 +24,6 @@ let BulletsSVG = {
         return (
             <g key={key.body.id}>
                 <circle
-                    className="bullet"
                     cx={key.body.position.x}
                     cy={key.body.position.y}
                     r={key.body.circleRadius}
@@ -39,7 +37,6 @@ let BulletsSVG = {
         return (
             <g key={key.body.id}>
                 <circle
-                    className="explosion"
                     cx={key.body.position.x}
                     cy={key.body.position.y}
                     r={key.body.circleRadius}
@@ -48,19 +45,18 @@ let BulletsSVG = {
             </g>
         )
     },
-    bigBullet: (key) => {
+    sakuraHoming: (key) => {
         return (
             <g key={key.body.id}>
                 <circle
-                    className={key.className}
                     cx={key.body.position.x}
                     cy={key.body.position.y}
                     r={key.body.circleRadius}
                     stroke="#C24CF6"
                     fill="black"
                     strokeWidth="5">
-                        <animate attributeName="fill" from="#FFFF26" to="#C24CF6" dur="0.05s" begin="0s" repeatCount="indefinite" fill="freeze"/>
-                    </circle>
+                    <animate attributeName="fill" from="#FFFF26" to="#C24CF6" dur="0.05s" begin="0s" repeatCount="indefinite" fill="freeze" />
+                </circle>
             </g>
         )
     },
@@ -68,7 +64,6 @@ let BulletsSVG = {
         return (
             <g key={key.body.id}>
                 <circle
-                    className="bullet"
                     cx={key.body.position.x}
                     cy={key.body.position.y}
                     r={key.body.circleRadius}
@@ -108,7 +103,6 @@ let BulletsSVG = {
         return (
             <g key={key.body.id}>
                 <circle
-                    className="bullet"
                     cx={key.body.position.x}
                     cy={key.body.position.y}
                     r={key.body.circleRadius}
@@ -118,13 +112,25 @@ let BulletsSVG = {
             </g>
         )
     },
+    nulPointer: key => {
+        return (
+            <circle
+                key={key.body.id}
+                fill="indigo"
+                opacity="0.5"
+                cx={key.body.position.x}
+                cy={key.body.position.y}
+                r={key.body.circleRadius}>
+                <animate attributeName="fill" values="indigo;white;indigo" keyTimes="0;0.5;1" keySplines="0.42 0 0.58 1;0.42 0 0.58 1" dur="2s" begin="0s" repeatCount="indefinite" />
+            </circle>
+        )
+    },
     vida: key => {
         let { x, y } = { ...key.body.position }
         let r = key.body.circleRadius
         return (
             <g key={key.body.id} >
                 <circle
-                    className="bullet"
                     cx={x}
                     cy={y}
                     r={r}
@@ -147,7 +153,6 @@ let BulletsSVG = {
         return (
             <g key={key.body.id} transform={`rotate(${key.body.angle} ${key.body.position.x} ${key.body.position.y})`}>
                 <rect
-                    className="bullet"
                     x={key.body.position.x + key.width / -2}
                     y={key.body.position.y + key.height / -2}
                     height={key.height}
@@ -165,7 +170,6 @@ let BulletsSVG = {
         return (
             <g key={key.body.id}>
                 <path
-                    className="lifeWave"
                     id={key.body.id}
                     d={`M ${vertices[0].x} ${vertices[0].y} L ${vertices[3].x} ${vertices[3].y} L ${vertices[5].x} ${vertices[5].y} L ${vertices[4].x} ${vertices[4].y} Z`}
                     fill="transparent"

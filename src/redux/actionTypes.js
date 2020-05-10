@@ -1,0 +1,16 @@
+export const CHANGE_SCENE = "CHANGE_SCENE"
+export const SELECT_ENEMY = "SELECT_ENEMY"
+export const CLEAR_ENEMY = "CLEAR_ENEMY"
+export const SET_SHOW_INTRO = "SET_SHOW_INTRO"
+export const ENEMY_KILL = "ENEMY_KILL"
+export const ENEMY_RESTORE = "ENEMY_RESTORE"
+export const ENEMY_LIST = "ENEMY_LIST"
+
+export const VICTORY = "VICTORY"
+export const VICTORY_DATA = "VICTORY_DATA"
+export const DEATH_DATA = "DEATH_DATA"
+export const RESIZE_WINDOW = "RESIZE_WINDOW"
+
+export const PLAY_BGM = "PLAY_BGM"
+export const STOP_BGM = "STOP_BGM"
+export const TOGGLE_MUTE = "TOGGLE_MUTE"

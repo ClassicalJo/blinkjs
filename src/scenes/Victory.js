@@ -1,10 +1,12 @@
 import React, { useEffect } from 'react'
 import PlayerSVG from '../assets/svg/PlayerSVG'
-import Viewbox from '../assets/svg/Viewbox'
-import EnemySVG from '../assets/svg/EnemySVG'
 import { Howl } from "howler"
 import enemyScream from "../assets/sounds/sfx/enemy_scream.wav"
 import enemyExplosion from "../assets/sounds/sfx/enemy_explosion.wav"
+import { connect } from "react-redux"
+import { changeScene } from "../redux/actions"
+import Viewbox from '../assets/svg/Viewbox'
+
 let shuffle = arr => {
     var i, temp, j, len = arr.length;
     for (i = 0; i < len; i++) {
@@ -30,6 +32,7 @@ let explosion = new Howl({
 
 let Victory = props => {
     useEffect(() => {
+        props.bgm.songs[props.bgm.current].stop()
         scream.play()
         let timeout = setTimeout(() => explosion.play(), 2000)
         return () => clearTimeout(timeout)
@@ -49,17 +52,22 @@ let Victory = props => {
             </text>
 
             <g>
-                {EnemySVG[props.victoryData.enemy.name](props.victoryData.enemy)}
-                <animate attributeName="opacity" from="1" to="0" dur="0.1s" begin="1.9s" fill="freeze" />
+                <circle
+                    r={props.enemy.body.circleRadius}
+                    fill={props.enemy.coreColor}
+                    cx={props.enemy.body.position.x}
+                    cy={props.enemy.body.position.y}>
+                    <animate attributeName="opacity" from="1" to="0" dur="0.1s" begin="1.9s" fill="freeze" />
+                </circle>
             </g>
             <g>
                 {shuffle([30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360]).map((key, index) => (
                     <circle
                         key={key}
-                        fill={props.victoryData.enemy.coreColor}
+                        fill={props.enemy.coreColor}
                         r="20"
-                        cx={props.victoryData.enemy.body.position.x + (30 + Math.floor(Math.random() * 10)) * Math.cos(key * Math.PI / 180)}
-                        cy={props.victoryData.enemy.body.position.y + (30 + Math.floor(Math.random() * 10)) * Math.sin(key * Math.PI / 180)}
+                        cx={props.enemy.body.position.x + (30 + Math.floor(Math.random() * 10)) * Math.cos(key * Math.PI / 180)}
+                        cy={props.enemy.body.position.y + (30 + Math.floor(Math.random() * 10)) * Math.sin(key * Math.PI / 180)}
                         opacity="0">
                         <animate
                             attributeName="opacity"
@@ -78,7 +86,7 @@ let Victory = props => {
                             values={`
                         ${(30 + Math.floor(Math.random() * 10)) * Math.cos(key * Math.PI / 180)} ${(30 + Math.floor(Math.random() * 10)) * Math.sin(key * Math.PI / 180)};
                         ${1500 * Math.cos(key * Math.PI / 180)} ${1500 * Math.sin(key * Math.PI / 180)};
-                        ${props.victoryData.player.body.position.x - props.victoryData.enemy.body.position.x} ${props.victoryData.player.body.position.y - props.victoryData.enemy.body.position.y}
+                        ${props.player.body.position.x - props.enemy.body.position.x} ${props.player.body.position.y - props.enemy.body.position.y}
                         `}
 
                             dur="3s"
@@ -90,8 +98,8 @@ let Victory = props => {
                 <animateTransform
                     attributeName="transform"
                     type="rotate"
-                    from={`0 ${props.victoryData.enemy.body.position.x} ${props.victoryData.enemy.body.position.x}`}
-                    to={`360 ${props.victoryData.player.body.position.x} ${props.victoryData.player.body.position.x}`}
+                    from={`0 ${props.enemy.body.position.x} ${props.enemy.body.position.x}`}
+                    to={`360 ${props.player.body.position.x} ${props.player.body.position.x}`}
                     begin="2s"
                     dur="3s"
                     fill="freeze"
@@ -99,7 +107,7 @@ let Victory = props => {
             />
             </g>
             <g>
-                {PlayerSVG(props.victoryData.player.body.position.x - 10, props.victoryData.player.body.position.y - 10, 20, 20)}
+                {PlayerSVG(props.player.body.position.x - 10, props.player.body.position.y - 10, 20, 20)}
                 <animate
                     attributeName="opacity"
                     from="1"
@@ -109,7 +117,7 @@ let Victory = props => {
                     fill="freeze"
                 />
             </g>
-            <rect rx="20" width="200" height="100" x="-100" y="300" cursor="pointer" fill="transparent" onClick={() => props.sceneChange("select")} />
+            <rect rx="20" width="200" height="100" x="-100" y="300" cursor="pointer" fill="transparent" onClick={() => props.dispatch(changeScene("select"))} />
             <text
                 fontFamily="Arial Black"
                 fontSize="50"
@@ -134,4 +142,11 @@ let Victory = props => {
     )
 }
 
-export default Victory
+function mapStateToProps(state) {
+    return {
+        enemy: state.victory.enemy,
+        player: state.victory.player,
+        bgm: state.bgm
+    }
+}
+export default connect(mapStateToProps)(Victory)

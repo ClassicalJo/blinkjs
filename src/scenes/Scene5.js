@@ -1,30 +1,22 @@
-import Scene from '../common/Scene';
+import Scene, { mapStateToProps, mapDispatchToProps } from "../common/Scene"
 import { Enemy } from '../common/Enemy'
-import { World, Composite, Body } from 'matter-js'
+import { Composite, Body } from 'matter-js'
 import Target from "../common/TargetingSystem"
 import { avaBullet, avaHoming, avaPointer, avaRailgun, avaAim, avaCannon } from "../common/EnemyBullets"
-import { Howl } from "howler"
-import cannonSound from "../assets/sounds/sfx/ava_cannon.mp3"
-import fireworksSound from "../assets/sounds/sfx/ava_fireworks.wav"
-import fireworksReverseSound from "../assets/sounds/sfx/ava_fireworks_reverse.wav"
-import missileSound from "../assets/sounds/sfx/ava_missiles.wav"
-import bulletSound from "../assets/sounds/sfx/ava_bullet.wav"
-import railgunSound from "../assets/sounds/sfx/ava_railgun.wav"
+import { connect } from 'react-redux'
+import { withCookies } from "react-cookie"
 
 class Scene5 extends Scene {
     constructor(props) {
         super(props)
-        this.enemy = new Enemy(0, -350, 50, 250, this.world)
+        this.enemy = new Enemy(0, -350, 50, 275, this.world, this.enemies)
         this.enemy.name = "ava"
         this.enemy.coreColor = "white"
-        this.enemy.className = "ava"
         this.enemy.trail = true
-        World.add(this.world, this.enemy.body)
-        this.enemies.push(this.enemy)
         this.colors = ["violet", "indigo", "blue", "green", "yellow", "orange", "red"]
         this.spotters = []
-
         this.schedule.push(
+            () => this.setBackgroundMusic("ava"),
             () => this.spotter.pointer(this.enemy.body.position, this.next),
             () => this.spotter.create(this.enemy.body.position, this.next),
             () => this.spotter.create(this.enemy.body.position, this.next),
@@ -121,12 +113,12 @@ class Scene5 extends Scene {
             () => this.fireworks({ x: 0, y: 0 }, this.next),
             () => this.barrage(),
             () => this.barrage(),
-            () => this.barrage([this.spotters[3].body.position, 4]),
-            () => this.barrage([this.spotters[0].body.position, 1], [this.spotters[4].body.position, 5]),
-            () => this.barrage([this.spotters[1].body.position, 2], [this.spotters[4].body.position, 5]),
-            () => this.barrage([this.spotters[0].body.position, 1], [this.spotters[2].body.position, 3], [this.spotters[4].body.position, 5]),
-            () => this.barrage([this.spotters[2].body.position, 3]),
-            () => this.barrage([this.spotters[0].body.position, 1], [this.spotters[4].body.position, 5]),
+            () => this.barrage([this.spotters[3], 4]),
+            () => this.barrage([this.spotters[0], 1], [this.spotters[4], 5]),
+            () => this.barrage([this.spotters[1], 2], [this.spotters[4], 5]),
+            () => this.barrage([this.spotters[0], 1], [this.spotters[2], 3], [this.spotters[4], 5]),
+            () => this.barrage([this.spotters[2], 3]),
+            () => this.barrage([this.spotters[0], 1], [this.spotters[4], 5]),
             () => {
                 this.fireworks({ x: 0, y: 0 })
                 this.barrage()
@@ -147,57 +139,26 @@ class Scene5 extends Scene {
                 this.timeout(() => this.missiles(this.next), 667)
             },
             () => this.moveBody(this.enemy.body, 0, 0, 1, this.next),
-            () => this.timeout(this.next, 3000),
-            () => this.theEnd(),
-            () => null,
+            () => this.timeout(() => {
+                this.theEnd({ ...this.enemy.body.position })
+                this.enemy.remove()
+            }, 3000),
+
         )
         this.step = this.scheduleStart()
         this.schedule[this.step.next().value]()
 
-        this.sfx.ava = {
-            cannon: new Howl({
-                src: [cannonSound],
-                volume: 0.25,
-                preload: true
 
-            }),
-            fireworks: new Howl({
-                src: [fireworksSound],
-                volume: 0.5,
-                preload: true
-            }),
-            fireworksReverse: new Howl({
-                src: [fireworksReverseSound],
-                volume: 0.5,
-                preload: true
-            }),
-            missiles: new Howl({
-                src: [missileSound],
-                volume: 0.5,
-                preload: true,
-            }),
-            bullet: new Howl({
-                src: [bulletSound],
-                volume: 0.75,
-                preload: true,
-            }),
-            railgun: new Howl({
-                src: [railgunSound],
-                volume: 0.5,
-                preload: true,
-            })
-        }
     }
     barrage = (...cannonShots) => {
+        if (cannonShots.length > 0) {
+            cannonShots.forEach(key => {
+                this.timeout(() => this.fire.cannon(key[0].body.position, this.player.body.position), 667 * key[1])
+            })
+        }
         for (let i = 0; i < 6; i++) {
-            if (cannonShots.length > 0) {
-                cannonShots.forEach(key => {
-                    this.timeout(() => this.fire.cannon(key[0], this.player.body.position), 667 * key[1])
-                })
-            }
             this.timeout(() => this.fire.bullet(this.spotters[i].body.position, this.player.body.position, 20), 667 * i)
         }
-
         this.timeout(this.next, 667 * 6)
     }
     bells = (reload, callback) => {
@@ -209,41 +170,45 @@ class Scene5 extends Scene {
 
     fire = {
         bullet: (origin, target, speed, callback) => {
-            this.sfx.ava.bullet.stop()
-            this.sfx.ava.bullet.play()
+            this.props.sfx.ava.bullet.stop()
+            this.props.sfx.ava.bullet.play()
             for (let i = 0; i < 3; i++) {
-                this.timeout(() => new avaBullet(origin.x, origin.y, target.x, target.y, 5, speed, 0, this.world, this.bullets, "orange"), 100 * i)
+                this.timeout(() => new avaBullet(origin, target, 5, speed, 0, this.world, this.bullets, "orange"), 100 * i)
             }
             if (callback) callback()
         },
         delayed: (origin, target, homing, delayHoming, speed, callback) => {
-            let missile = new avaHoming(origin, target, homing, delayHoming, speed, this.world, this.bullets, this.colors[Math.floor(Math.random() * this.colors.length)])
+            let missile = new avaHoming(origin, target, 10, homing, delayHoming, speed, this.world, this.bullets, this.colors[Math.floor(Math.random() * this.colors.length)])
             if (callback) callback()
             return missile
         },
         cannon: (origin, target, callback) => {
-            let aim = new avaAim(origin.x, origin.y, 2000, 5, Math.atan2(target.y - origin.y, target.x - origin.x), this.world, this.bullets)
-            this.sfx.ava.bullet.stop()
-            this.sfx.ava.cannon.play()
-            aim.currentAngle = Math.atan2(target.y - origin.y, target.x - origin.x)
-
+            let aim = new avaAim(origin, 2000, 5, Math.atan2(target.y - origin.y, target.x - origin.x), this.world, this.bullets)
+            this.props.sfx.ava.bullet.stop()
+            this.props.sfx.ava.cannon.play()
+            let currentAngle = Math.atan2(target.y - origin.y, target.x - origin.x)
+            let angle = {
+                add: () => currentAngle += Math.PI / 360,
+                substract: () => currentAngle += -Math.PI / 360,
+                get: () => currentAngle,
+            }
             for (let i = 0; i < 667; i += 10) {
                 this.timeout(() => {
                     let newAngle = Math.atan2(target.y - origin.y, target.x - origin.x)
-                    if (Math.abs(newAngle - aim.currentAngle) < Math.PI / 360) Body.rotate(aim.body, 0, origin)
-                    else if (newAngle > aim.currentAngle) {
+                    if (Math.abs(newAngle - angle.get()) < Math.PI / 360) Body.rotate(aim.body, 0, origin)
+                    else if (newAngle > angle.get()) {
                         Body.rotate(aim.body, Math.PI / 360, origin)
-                        aim.currentAngle += Math.PI / 360
+                        angle.add()
                     }
-                    else if (newAngle < aim.currentAngle) {
+                    else if (newAngle < angle.get()) {
                         Body.rotate(aim.body, -Math.PI / 360, origin)
-                        aim.currentAngle += -Math.PI / 360
+                        angle.substract()
                     }
                 }, i)
             }
             this.timeout(() => {
                 aim.remove()
-                let cannon = new avaCannon(origin.x, origin.y, 100, 5, aim.currentAngle, this.world, this.bullets)
+                let cannon = new avaCannon(origin, 100, 5, currentAngle, this.world, this.bullets)
                 let composite = Composite.create({ bodies: [cannon.body] })
                 for (let i = 1; i <= 18; i++) {
                     this.timeout(() => {
@@ -265,17 +230,18 @@ class Scene5 extends Scene {
         }
     }
 
-
     missiles = callback => {
         let squad = []
-        this.sfx.ava.missiles.play()
+        this.props.sfx.ava.missiles.play()
         for (let i = 1; i < 5; i++) {
+            let left = { x: -500 + 100 * i, y: -500 }
+            let right = { x: 500 - 100 * i, y: -500 }
             this.timeout(() => {
-                let missile = this.fire.delayed(this.enemy.body.position, { x: -500 + 100 * i, y: -500 }, this.player.body.position, 250 - 50 * i, 25)
+                let missile = this.fire.delayed(this.enemy.body.position, left, this.player.body.position, 250 - 50 * i, 25)
                 squad.push(missile)
             }, 50 * i)
             this.timeout(() => {
-                let missile = this.fire.delayed(this.enemy.body.position, { x: 500 - 100 * i, y: -500 }, this.player.body.position, 250 - 50 * i, 25)
+                let missile = this.fire.delayed(this.enemy.body.position, right, this.player.body.position, 250 - 50 * i, 25)
                 squad.push(missile)
             }, 50 * i + 50)
         }
@@ -319,7 +285,7 @@ class Scene5 extends Scene {
         stream: {
             on: () => {
                 new avaRailgun(this.pointer.body.position, this.player.body.position, 5, 40, 1000, this.world, this.bullets)
-                this.timeout(() => this.sfx.ava.railgun.play(), 1000)
+                this.timeout(() => this.props.sfx.ava.railgun.play(), 1000)
                 if (this.spotter.trail) this.timeout(() => this.spotter.stream.on(), this.spotter.stream.spacing)
             },
             off: () => {
@@ -341,16 +307,20 @@ class Scene5 extends Scene {
 
     fireworks = (target, callback) => {
         let randomColor = this.colors[Math.floor(Math.random() * this.colors.length)]
-        let bomb = new avaBullet(this.enemy.body.position.x, this.enemy.body.position.y, target.x, target.y, 10, 15, 0, this.world, this.bullets, randomColor)
+        let bomb = new avaBullet(this.enemy.body.position, target, 10, 15, 0, this.world, this.bullets, randomColor)
         this.timeout(() => {
             let cluster = []
             let center = { ...bomb.body.position }
-            this.sfx.ava.fireworks.play()
+            this.props.sfx.ava.fireworks.play()
             for (let i = 0; i < 20; i++) {
-                cluster[i] = new avaBullet(center.x, center.y, center.x + Math.cos(2 * Math.PI / 20 * i), center.y + Math.sin(2 * Math.PI / 20 * i), 5, 20, 0, this.world, this.bullets, randomColor)
+                let target = {
+                    x: center.x + Math.cos(2 * Math.PI / 20 * i),
+                    y: center.y + Math.sin(2 * Math.PI / 20 * i)
+                }
+                cluster[i] = new avaBullet(center, target, 5, 20, 0, this.world, this.bullets, randomColor)
             }
             this.timeout(() => {
-                this.timeout(() => this.sfx.ava.fireworksReverse.play(), 750)
+                this.timeout(() => this.props.sfx.ava.fireworksReverse.play(), 750)
                 for (let bullet in cluster) {
                     Body.setVelocity(cluster[bullet].body, { x: -2 * Math.cos(Target.getTheta(cluster[bullet].body.position.x, cluster[bullet].body.position.y, center.x, center.y)), y: -2 * Math.sin(Target.getTheta(cluster[bullet].body.position.x, cluster[bullet].body.position.y, center.x, center.y)) })
                     this.timeout(() => this.curveRedirect(cluster[bullet].body, center, 200), 750)
@@ -393,4 +363,4 @@ class Scene5 extends Scene {
 
 }
 
-export default Scene5
+export default withCookies(connect(mapStateToProps, mapDispatchToProps)(Scene5))

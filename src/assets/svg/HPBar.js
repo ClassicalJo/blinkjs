@@ -11,7 +11,6 @@ let HPBar = props => {
                 fill={props.coreColor}
                 opacity="0"
             >
-
                 <animate attributeName="opacity" from="0" to="0.8" begin="0.1s" dur="0.5s" fill="freeze" />
                 {props.showIntro && <animateTransform attributeName="transform" type="translate" from="0 1000" to="0 0" dur="1s" begin="0s" fill="freeze" />}
             </rect>
@@ -28,4 +27,5 @@ let HPBar = props => {
         </g>
     )
 }
+
 export default HPBar
