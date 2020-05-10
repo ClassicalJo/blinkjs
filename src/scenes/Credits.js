@@ -1,8 +1,19 @@
-import React from 'react'
-import ViewBox from "../assets/svg/Viewbox"
+import React, { useEffect } from 'react'
+import Viewbox from '../assets/svg/Viewbox'
+import { connect } from 'react-redux'
+
 let Credits = props => {
+    useEffect(() => {
+        if (props.bgm.current !== "credits") {
+            props.bgm.songs[props.bgm.current].stop()
+            props.bgm.songs.credits.play()
+            props.dispatch({ type: "PLAY_BGM", payload: "credits" })
+        }
+    })
+
+
     return (
-        <ViewBox>
+        <Viewbox>
             <text fontSize="40" fontFamily="Arial Black" fill="white" alignmentBaseline="central" x="-750" y={-400}>Due credit to the following for their amazing job at being amazing:</text>
             <text fontSize="40" fontFamily="Arial Black" fill="white" alignmentBaseline="central" x="-750" y={-300}>
                 Physics Engine: Matter-JS by liabru
@@ -42,9 +53,16 @@ let Credits = props => {
                 </text>
             <text fontSize="40" fontFamily="Arial Black" fill="white" alignmentBaseline="central" x="-750" y={200}>Adhara, War, Robert, Diego, Marian, Brodda, Lihuel, Kieron</text>
 
-            <rect x="-100" y="420" width="200" height="60" onClick={() => props.sceneChange("start")} cursor="pointer" />
+            <rect x="-100" y="420" width="200" height="60" onClick={() => props.dispatch({ type: "CHANGE_SCENE", payload: "start" })} cursor="pointer" />
             <text fontSize="40" fontFamily="Arial Black" fill="white" textAnchor="middle" alignmentBaseline="central" x="0" y={450} pointerEvents="none">Back</text>
-        </ViewBox>
+        </Viewbox>
     )
 }
-export default Credits
+
+function mapStateToProps(state) {
+    return {
+        bgm: state.bgm
+    }
+}
+
+export default connect(mapStateToProps)(Credits)

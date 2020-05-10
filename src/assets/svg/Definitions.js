@@ -85,7 +85,7 @@ let Definitions = () => {
                 )
             })}
 
-        </defs>
+        </defs >
     )
 }
 

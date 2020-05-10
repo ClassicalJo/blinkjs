@@ -1,43 +1,31 @@
 import React, { useEffect } from 'react'
-import ViewBox from "../assets/svg/Viewbox"
-import playerExplosion from "../assets/sounds/sfx/player_explosion.wav"
-import { Howl } from "howler"
-
-let handleKeyDown = (e, props) => {
-    if (e.key === "r" || e.key === "R") {
-        props.setShowIntro(false)
-        props.sceneChange("select")
-    }
-}
-
-let sfx = {
-    player: {
-        explosion: new Howl({
-            src: [playerExplosion],
-            preload: true
-        })
-    }
-}
+import { connect } from 'react-redux'
+import Viewbox from '../assets/svg/Viewbox'
 
 let Death = props => {
     useEffect(() => {
-        window.addEventListener("keydown", (e) => handleKeyDown(e, props))
-        let timeout = setTimeout(() => sfx.player.explosion.play(), 1000)
+        function reset(e) {
+            if (e.key === "r" || e.key === "R") {
+                props.setShowIntro(false)
+                props.changeScene("select")
+            }
+        }
+        window.addEventListener("keydown", reset)
+        let timeout = setTimeout(() => props.sfx.player.explosion.play(), 1000)
         return () => {
             clearTimeout(timeout)
-            sfx.player.explosion.stop()
-            window.removeEventListener("keydown", (e) => handleKeyDown(e, props))
+            props.sfx.player.explosion.stop()
+            window.removeEventListener("keydown", reset)
         }
     })
     return (
-        <ViewBox>
+        <Viewbox>
             <rect
                 x={props.x - props.width / 2}
                 y={props.y - props.height / 2}
                 width={props.width}
                 height={props.height}
-                fill="pink"
-            >
+                fill="pink">
                 <animate attributeName="opacity" from="1" to="0" dur="0.1s" begin="1s" fill="freeze" calcMode="discrete" />
             </rect>
             {[30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360].map(key => (
@@ -82,7 +70,7 @@ let Death = props => {
                     opacity="0"
                     onClick={() => {
                         props.setShowIntro(false)
-                        props.sceneChange("select")
+                        props.changeScene("select")
                     }}
                 >
                     <animate
@@ -113,11 +101,26 @@ let Death = props => {
                     />
                 </text>
             </g>
-        </ViewBox>
+        </Viewbox>
     )
 
 }
 
+export function mapStateToProps(state) {
+    return {
+        ...state.death,
+        showIntro: state.scene.showIntro,
+        enemies: state.enemies,
+        
+        sfx: state.sfx,
+    }
+}
+export function mapDispatchToProps(dispatch) {
+    return {
+        changeScene: string => dispatch({ type: "CHANGE_SCENE", payload: string }),
+        setShowIntro: boolean => dispatch({ type: "SET_SHOW_INTRO", payload: boolean })
 
+    }
+}
 
-export default Death
+export default connect(mapStateToProps, mapDispatchToProps)(Death)

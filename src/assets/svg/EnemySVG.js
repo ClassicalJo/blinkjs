@@ -71,7 +71,6 @@ let EnemySVG = {
         return (
             <g key={key.body.id} transform={`rotate(${key.body.angle * 180 / Math.PI} ${key.body.position.x} ${key.body.position.y})`}>
                 <circle
-                    className={key.className}
                     cx={key.body.position.x}
                     cy={key.body.position.y}
                     r={key.body.circleRadius}
@@ -85,7 +84,6 @@ let EnemySVG = {
         return (
             <g key={key.body.id} transform={`rotate(${key.body.angle * 180 / Math.PI} ${key.body.position.x} ${key.body.position.y})`}>
                 <circle
-                    // className={key.className}
                     cx={key.body.position.x}
                     cy={key.body.position.y}
                     r={key.body.circleRadius}
@@ -98,7 +96,6 @@ let EnemySVG = {
         return (
             <g key={key.body.id} transform={`rotate(${key.body.angle * 180 / Math.PI} ${key.body.position.x} ${key.body.position.y})`}>
                 <circle
-                    // className={key.className}
                     cx={key.body.position.x}
                     cy={key.body.position.y}
                     r={key.body.circleRadius}
@@ -112,7 +109,6 @@ let EnemySVG = {
             <g key={key.body.id} transform={`rotate(${key.body.angle * 180 / Math.PI} ${key.body.position.x} ${key.body.position.y})`}>
                 <path d={nul.delta(key.body.position.x, key.body.position.y, key.body.circleRadius)} fill="purple" />
                 <circle
-                    className={key.className}
                     cx={key.body.position.x}
                     cy={key.body.position.y}
                     r={key.body.circleRadius}
@@ -127,7 +123,6 @@ let EnemySVG = {
             <g key={key.body.id} transform={`rotate(${key.body.angle * 180 / Math.PI} ${key.body.position.x} ${key.body.position.y})`}>
                 <path d={vida.cross(key.body.position.x, key.body.position.y, key.body.circleRadius)} fill="#ccc3b4" />
                 <circle
-                    className={key.className}
                     cx={key.body.position.x}
                     cy={key.body.position.y}
                     r={key.body.circleRadius}
@@ -169,7 +164,6 @@ let EnemySVG = {
                 ))}
                 <circle
                     key={key.body.id}
-                    className={key.className}
                     cx={key.body.position.x}
                     cy={key.body.position.y}
                     r={key.body.circleRadius}
